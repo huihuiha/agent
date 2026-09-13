@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent 开发知识点与注意事项手册</title>
+<title>Agent 开发手册：知识点与注意事项（12 主题完整版）</title>
 <style>
   :root {
     --ink: #1f2430; --paper: #fffdf6; --line: #2b2b2b;
-    --blue: #2563eb; --blue-bg: #dbeafe; --amber: #d97706; --amber-bg: #fef3c7;
-    --red: #dc2626; --red-bg: #fef2f2; --teal: #0d9488; --teal-bg: #ccfbf1;
-    --green: #16a34a; --green-bg: #f0fdf4; --purple: #7c3aed; --purple-bg: #ede9fe;
+    --blue: #2563eb; --amber: #d97706; --amber-bg: #fef3c7;
+    --red: #dc2626; --teal: #0d9488; --teal-bg: #ccfbf1;
+    --purple: #7c3aed;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: #e9e4d8; color: var(--ink);
@@ -24,12 +24,14 @@
 
   .card { background: var(--paper); border: 3.5px solid var(--line); border-radius: 16px;
     padding: 20px 22px 18px; margin-bottom: 24px; box-shadow: 6px 6px 0 rgba(0,0,0,.12); }
-  .card h2 { margin: 0 0 12px; font-size: 19px; display: flex; align-items: center; gap: 10px; }
+  .card h2 { margin: 0 0 12px; font-size: 19px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .card h2 .n { background: var(--ink); color: #fff; border-radius: 8px; font-size: 13px;
     padding: 1px 10px; font-family: monospace; }
+  .card h2 .next { font-size: 11.5px; color: #fff; background: var(--purple);
+    border-radius: 999px; padding: 1px 10px; }
 
   .sec { border-radius: 12px; padding: 12px 16px; margin-top: 12px; }
-  .sec .t { font-weight: 800; font-size: 14.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .sec .t { font-weight: 800; font-size: 14.5px; margin-bottom: 8px; }
   .know { background: var(--teal-bg); border: 2px solid var(--teal); }
   .know .t { color: var(--teal); }
   .care { background: var(--amber-bg); border: 2px solid var(--amber); }
@@ -48,7 +50,8 @@
     overflow-x: auto; white-space: pre; color: #374151; margin-top: 12px; }
 
   .cite { margin-top: 10px; font-size: 12.5px; color: #7c6f57; text-align: right; }
-  .cite::before { content: "🔍 案例落点："; }
+  .cite.case::before { content: "🔍 案例落点："; }
+  .cite.todo::before { content: "🧭 案例现状："; }
 
   footer { text-align: center; color: #6b7280; font-size: 13.5px; margin-top: 30px; line-height: 2; }
   footer a { color: var(--blue); }
@@ -60,8 +63,8 @@
 
 <header class="cover">
   <h1>Agent 开发手册<br>知识点 与 注意事项</h1>
-  <p>9 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
-  <p style="font-size:13.5px;opacity:.6;">案例：github.com/huihuiha/agent → llm-unify/ ｜ 配套飞书文档同名</p>
+  <p>12 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
+  <p style="font-size:13.5px;opacity:.6;">标注「进阶主题」的属于 Agent 深水区，基础篇案例未覆盖、原理先备着</p>
 </header>
 
 <!-- ============ 1 ============ -->
@@ -79,16 +82,39 @@
     <div class="t">⚠️ 注意事项</div>
     <ul>
       <li><b>用户输入永远不要拼进 system</b>——system 是规则层，user 是数据层，混了就是注入漏洞</li>
-      <li>调试期固定 temperature（否则问题无法复现）；记录每次的 <code>usage</code>，成本意识从第一天开始</li>
-      <li>上下文快满时主动裁剪，别等报错；对模型的输出<b>永远保留校验这一步</b></li>
+      <li>调试期固定 temperature；<b>采样参数要随调用日志落库</b>——复现某次调用时缺了参数就不算完整证据</li>
+      <li>记录每次的 <code>usage</code>，成本意识从第一天开始；对模型输出<b>永远保留校验这一步</b></li>
     </ul>
   </div>
-  <div class="cite">llm-unify 统一协议 contracts.py（7 字段公共交集）</div>
+  <div class="cite case">llm-unify contracts.py：七字段统一协议（案例未落库采样参数，列为已知差距）</div>
 </div>
 
 <!-- ============ 2 ============ -->
 <div class="card">
-  <h2><span class="n">02</span>统一调用层（多供应商）</h2>
+  <h2><span class="n">02</span>记忆与上下文管理</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li><b>短期记忆 = 消息列表的累积</b>：对话历史、工具结果全都追加进上下文；上限是窗口，计量是 token——记忆是有成本的</li>
+      <li>三个管理手段：<b>裁剪</b>（只留最近 N 轮）、<b>摘要</b>（旧历史压缩成梗概保留）、<b>外置</b>（存向量库、用时检索——即 RAG，检索增强生成）</li>
+      <li>一个比喻：<b>上下文窗口是内存，向量库是硬盘</b>——内存贵而快容量小，硬盘大而便宜，聪明的 Agent 分层使用</li>
+    </ul>
+  </div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>别等窗口报错才处理</b>——接近上限就要有裁剪/摘要策略（超窗异常是最后防线不是设计）</li>
+      <li>工具结果直接喂回会<b>快速膨胀上下文</b>——长输出先摘要再入列</li>
+      <li>历史消息也是"发生过的事"：被污染过的轮次要能标记与剔除；<b>RAG 检索回来的内容同样不可信</b>（间接注入的入口之一）</li>
+      <li>多轮 assistant 历史必须带上，否则模型每轮"失忆重来"</li>
+    </ul>
+  </div>
+  <div class="cite todo">llm-unify 已实现超窗异常识别＋自动换更大窗口路由；事前裁剪/摘要在案例中留作练习，RAG 属进阶篇</div>
+</div>
+
+<!-- ============ 3 ============ -->
+<div class="card">
+  <h2><span class="n">03</span>统一调用层（多供应商）</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
@@ -106,12 +132,12 @@
       <li>留一个"无 Key 演示模式"，评审和测试都省事</li>
     </ul>
   </div>
-  <div class="cite">llm-unify 三适配器 + ADAPTER_REGISTRY 注册表</div>
+  <div class="cite case">llm-unify 三适配器 + ADAPTER_REGISTRY 注册表 + fake 演示模式</div>
 </div>
 
-<!-- ============ 3 ============ -->
+<!-- ============ 4 ============ -->
 <div class="card">
-  <h2><span class="n">03</span>流式输出</h2>
+  <h2><span class="n">04</span>流式输出</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
@@ -129,12 +155,12 @@
       <li>统计信息（usage/延迟）挂在结束事件上带回，别在前端猜</li>
     </ul>
   </div>
-  <div class="cite">llm-unify service.py 的 emitted 标志与五种类型化事件</div>
+  <div class="cite case">llm-unify service.py 的 emitted 标志与五种类型化事件</div>
 </div>
 
-<!-- ============ 4 ============ -->
+<!-- ============ 5 ============ -->
 <div class="card">
-  <h2><span class="n">04</span>结构化输出</h2>
+  <h2><span class="n">05</span>结构化输出</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
@@ -152,12 +178,12 @@
       <li>校验只管格式不管语义：字段值里照样能藏敏感信息/注入内容，重要场景加内容扫描</li>
     </ul>
   </div>
-  <div class="cite">llm-unify structured.py 三档降级 + 修复循环</div>
+  <div class="cite case">llm-unify structured.py：三档降级 + 限次修复循环 + 泄漏扫描</div>
 </div>
 
-<!-- ============ 5 ============ -->
+<!-- ============ 6 ============ -->
 <div class="card">
-  <h2><span class="n">05</span>工具调用（tool_calls）</h2>
+  <h2><span class="n">06</span>工具调用（tool_calls）<span class="next">进阶主题</span></h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
@@ -175,12 +201,12 @@
       <li>警惕<b>间接注入</b>：工具返回的内容（网页、文件）同样不可信，别直接拼进上下文</li>
     </ul>
   </div>
-  <div class="cite">llm-unify 的结构化输出正是接工具前的必修地基</div>
+  <div class="cite todo">案例未实现（课程下一层）；llm-unify 的结构化输出正是接工具前的必修地基</div>
 </div>
 
-<!-- ============ 6 ============ -->
+<!-- ============ 7 ============ -->
 <div class="card">
-  <h2><span class="n">06</span>Agent Loop（核心循环）</h2>
+  <h2><span class="n">07</span>Agent Loop（核心循环）<span class="next">进阶主题</span></h2>
   <div class="diagram">while 轮数 < 上限:
     响应 = LLM(messages, tools)
     if 响应.tool_calls:
@@ -205,12 +231,12 @@
       <li>工具结果喂回时注意上下文膨胀——长输出先摘要再入列</li>
     </ul>
   </div>
-  <div class="cite">llm-unify 是循环的"供水系统"：保证每轮调用可靠</div>
+  <div class="cite todo">案例未实现循环编排（课程下一层）；llm-unify 是循环的"供水系统"，保证每轮调用可靠</div>
 </div>
 
-<!-- ============ 7 ============ -->
+<!-- ============ 8 ============ -->
 <div class="card">
-  <h2><span class="n">07</span>Prompt 工程</h2>
+  <h2><span class="n">08</span>Prompt 工程</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
@@ -224,21 +250,21 @@
     <ul>
       <li>改一个词行为就漂移——<b>没有版本管理的 prompt 调优全是玄学</b>，出事连"昨晚改了啥"都不知道</li>
       <li>用户提交的模板要<b>沙箱渲染</b>（SSTI 攻击能逃逸到代码执行）；变量缺失<b>立即报错</b>，半成品 prompt 比报错危险</li>
-      <li>改 prompt 要有<b>评测基准</b>对照——不然"感觉变好了"可能是错觉</li>
+      <li>改 prompt 要有<b>评测基准</b>对照——不然"感觉变好了"可能是错觉（详见主题 11）</li>
       <li>约束写在 system（高特权），不要写在容易被覆盖的位置</li>
     </ul>
   </div>
-  <div class="cite">llm-unify prompts.py：版本不可变＋Jinja2 沙箱＋StrictUndefined</div>
+  <div class="cite case">llm-unify prompts.py：版本不可变＋Jinja2 沙箱＋StrictUndefined</div>
 </div>
 
-<!-- ============ 8 ============ -->
+<!-- ============ 9 ============ -->
 <div class="card">
-  <h2><span class="n">08</span>安全（注入与防护）</h2>
+  <h2><span class="n">09</span>安全（注入与防护）</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
       <li><b>Prompt 注入是 OWASP LLM Top 1</b>：指令与数据共用自然语言，<b>没有语法边界</b>（SQL 有参数化，prompt 没有银弹）</li>
-      <li>现实解法是<b>纵深防御</b>（层 layered 降险）：输入包裹标记＋输出泄漏扫描＋角色分层＋权限最小化</li>
+      <li>现实解法是<b>纵深防御</b>（层层降险）：输入包裹标记＋输出泄漏扫描＋角色分层＋权限最小化</li>
       <li>第一性原理：<b>注入的危害上限 ＝ Agent 手中的权限上限</b></li>
     </ul>
   </div>
@@ -251,12 +277,12 @@
       <li>安全策略集中在网关层做——业务方各自为战必有遗漏</li>
     </ul>
   </div>
-  <div class="cite">llm-unify security.py 两道可配置防线</div>
+  <div class="cite case">llm-unify security.py 两道可配置防线（案例无工具，权限最小化暂不适用）</div>
 </div>
 
-<!-- ============ 9 ============ -->
+<!-- ============ 10 ============ -->
 <div class="card">
-  <h2><span class="n">09</span>工程骨架（稳定性与可观测）</h2>
+  <h2><span class="n">10</span>工程骨架（稳定性与可观测）</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
@@ -274,12 +300,59 @@
       <li>熔断/限流是进程内状态：多副本部署要换集中式实现（如 Redis）</li>
     </ul>
   </div>
-  <div class="cite">llm-unify 整个骨架：rate_limit / retry / router / observability</div>
+  <div class="cite case">llm-unify 整个骨架：rate_limit / retry / router / observability（Retry-After 采用列为已知差距）</div>
+</div>
+
+<!-- ============ 11 ============ -->
+<div class="card">
+  <h2><span class="n">11</span>评测（Evals）<span class="next">进阶主题</span></h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>Agent 的行为 = <b>prompt × 模型 × 参数</b> 的乘积——任何一项变了行为就变，<b>没有评测的调优是玄学</b></li>
+      <li>评测三件：用例集（输入＋期望）→ 批量执行 → 判分（精确匹配 / 规则断言 / 结构校验 / <b>LLM-as-judge</b> 让另一个模型打分）</li>
+      <li>三大用途：<b>版本对比</b>（prompt v1 vs v2）、<b>模型对比</b>（A 家 vs B 家）、<b>回归</b>（改完不退步）</li>
+    </ul>
+  </div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>先建评测、再改 prompt</b>——不是改坏了才想起要基准</li>
+      <li>用例输入要固定；模型是概率的——要么固定采样参数，要么多次采样取分布</li>
+      <li>LLM-as-judge 有偏差（位置偏好、长答偏好、自我偏好），<b>重要结论要人工抽检</b></li>
+      <li>评测集本身也是代码：要版本管理、要随能力演进更新</li>
+    </ul>
+  </div>
+  <div class="cite todo">案例未含评测模块（课程后续主题）；79 个单测演示了"把行为钉死"的同一思想</div>
+</div>
+
+<!-- ============ 12 ============ -->
+<div class="card">
+  <h2><span class="n">12</span>成本控制<span class="next">进阶主题</span></h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>成本公式：<b>（输入 token ＋ 输出 token）× 轮数 × 单价</b>——输出通常比输入贵数倍，而 Agent Loop 按轮数放大一切</li>
+      <li>四个抓手：<b>模型分级</b>（简单任务走便宜模型，路由解决）、<b>上下文精简</b>（记忆管理，见主题 02）、<b>输出限长</b>（max_tokens）、<b>前缀缓存</b>（prompt caching：重复前缀计费打折）</li>
+      <li>前提是<b>每次调用的成本可归集</b>（request_id × usage 落库），否则优化无从下手</li>
+    </ul>
+  </div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>防死循环就是防账单爆炸</b>——轮数上限是成本闸门，不只是稳定性闸门</li>
+      <li>max_tokens 两面性：既是成本闸门也是<b>截断风险</b>（结构化输出被截成非法 JSON，进修复循环反而更贵）</li>
+      <li>前缀缓存要求前缀<b>完全一致</b>——system 放最前、模板少动、变量放后段</li>
+      <li>便宜模型多出的重试/修复轮次，可能比贵模型一次到位更贵——<b>按任务实测</b>而不是看单价</li>
+    </ul>
+  </div>
+  <div class="cite todo">llm-unify 已有成本归集（usage×单价落库）与模型分级路由；前缀缓存依赖上游能力，属接入层进阶</div>
 </div>
 
 <footer>
-  📦 案例代码：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无 Key 可跑）<br>
-  📄 深度版：飞书《Agent 开发知识点与注意事项》｜ 🎬 本手册：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a>
+  🧭 学习路线：基础篇（01-05、08-10，案例已覆盖）→ 进阶篇（06/07 工具与循环 → 02 的 RAG → 11 评测 → 12 成本）<br>
+  📦 案例：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无 Key 可跑）<br>
+  🎬 本手册：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a> ｜ 📄 深度版见飞书文档
 </footer>
 </div>
 </body>
