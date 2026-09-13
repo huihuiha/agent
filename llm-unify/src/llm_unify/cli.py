@@ -88,6 +88,13 @@ def build_parser() -> argparse.ArgumentParser:
     structured.add_argument("--schema-inline", default=None, help="内联 JSON Schema 字符串")
     structured.add_argument("--stream", action="store_true", help="流式模式（缓冲后统一解析校验）")
 
+    agent = sub.add_parser("agent", help="Agent Loop（prompt 约定式工具调用，参考课程 1-1）")
+    agent.add_argument("-m", "--model", required=True, help="模型别名（见 models list）")
+    agent.add_argument("-p", "--prompt", required=True, help="任务输入")
+    agent.add_argument("--max-turns", type=int, default=8, help="最大轮数上限（默认 8）")
+    agent.add_argument("--json", action="store_true", dest="as_json",
+                       help="输出完整运行轨迹 JSON")
+
     prompts = sub.add_parser("prompts", help="Prompt 版本管理")
     prompts_sub = prompts.add_subparsers(dest="sub", required=True)
     prompts_sub.add_parser("list", help="列出全部 prompt 及版本")
@@ -280,6 +287,86 @@ def command_structured(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_agent(args: argparse.Namespace) -> int:
+    """Agent Loop 演示：prompt 约定式工具调用（参考课程 1-1 的 agent_loop_demo）。
+
+    内置三个演示工具（executor 即白名单——模型见不到的工具调不了，
+    权限最小化的最朴素形态）。每轮轨迹打印到 stderr，最终回答到 stdout。
+    """
+    import ast
+    import operator
+    from datetime import datetime
+
+    from llm_unify.contracts import ToolCall, ToolDefinition, UnifiedRequest
+    from llm_unify.loop import run_agent
+
+    builtin_tools = [
+        ToolDefinition(
+            name="get_weather",
+            description="查询指定城市的当前天气",
+            parameters={"type": "object",
+                        "properties": {"city": {"type": "string", "description": "城市名"}},
+                        "required": ["city"]},
+        ),
+        ToolDefinition(
+            name="now",
+            description="获取当前日期时间",
+            parameters={"type": "object", "properties": {}},
+        ),
+        ToolDefinition(
+            name="calc",
+            description="计算一个算术表达式，例如 (2+3)*4",
+            parameters={"type": "object",
+                        "properties": {"expression": {"type": "string"}},
+                        "required": ["expression"]},
+        ),
+    ]
+
+    _OPS = {
+        ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+        ast.Div: operator.truediv, ast.Pow: operator.pow, ast.Mod: operator.mod,
+        ast.USub: operator.neg,
+    }
+
+    def _eval_node(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in _OPS:
+            return _OPS[type(node.op)](_eval_node(node.left), _eval_node(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _OPS:
+            return _OPS[type(node.op)](_eval_node(node.operand))
+        raise ValueError(f"不支持的表达式节点: {ast.dump(node)[:40]}")
+
+    def executor(call: ToolCall) -> str:
+        if call.name == "get_weather":
+            return f"{call.arguments.get('city', '未知城市')}：晴，26℃，微风（演示数据）"
+        if call.name == "now":
+            return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if call.name == "calc":
+            return str(_eval_node(ast.parse(str(call.arguments.get("expression", "")), mode="eval").body))
+        return f"未知工具: {call.name}"
+
+    service = build_service(load_config(args.config), transport=args.transport)
+    request = UnifiedRequest(
+        model=args.model,
+        messages=[{"role": "user", "content": args.prompt}],
+        tools=builtin_tools,
+    )
+
+    def on_turn(turn) -> None:
+        for call, result in zip(turn.tool_calls, turn.results, strict=False):
+            print(f"[第 {turn.index} 轮] 调用 {call.name}({call.arguments}) → {result}", file=sys.stderr)
+        if turn.text is not None:
+            print(f"[第 {turn.index} 轮] 任务完成（共 {turn.index} 轮）", file=sys.stderr)
+
+    run = run_agent(service, request, executor, max_turns=args.max_turns, on_turn=on_turn)
+    if args.as_json:
+        print(json.dumps(run.to_dict(), ensure_ascii=False, indent=2))
+    else:
+        print(run.text)
+    return 0
+
+
 def _load_schema(args: argparse.Namespace) -> dict[str, Any]:
     from pathlib import Path
 
@@ -382,6 +469,8 @@ def main(argv: list[str] | None = None) -> int:
             return command_stream(args)
         if args.command == "structured":
             return command_structured(args)
+        if args.command == "agent":
+            return command_agent(args)
         if args.command == "prompts":
             return command_prompts(args)
         if args.command == "stats":

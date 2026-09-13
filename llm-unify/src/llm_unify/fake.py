@@ -14,6 +14,7 @@ from __future__ import annotations
 import itertools
 import json
 import os
+import re
 import threading
 from typing import Any
 
@@ -98,7 +99,59 @@ def _last_user_text(body: dict[str, Any]) -> str:
     return ""
 
 
+def _messages_of(body: dict[str, Any]) -> list:
+    messages = body.get("input") if isinstance(body.get("input"), list) else body.get("messages")
+    return messages if isinstance(messages, list) else []
+
+
+def _tool_call_reply(body: dict[str, Any]) -> str | None:
+    """Agent Loop 演示（prompt 约定式工具调用，参考课程 1-1）。
+
+    检测 system 里的工具协议声明（loop.build_tools_system_prompt 的标记）：
+    - 尚无工具结果 -> 输出一个 tool_call JSON（调第一个工具，参数按 Schema 生成）；
+    - 已有工具结果 -> 输出含工具结果的最终文本（Loop 终止）。
+    """
+    system_text = ""
+    for message in _messages_of(body):
+        if isinstance(message, dict):
+            content = message.get("content")
+            if message.get("role") == "system" or message.get("type") is None and message.get("role") is None:
+                system_text += str(content or "")
+    instructions = body.get("instructions") or body.get("system") or ""
+    system_text += str(instructions)
+    if "你可以使用以下工具完成任务" not in system_text:
+        return None
+
+    # 从 system 文本里解析工具清单（loop 的声明格式："- name: desc。参数 Schema: {...}"）
+    tools: list[tuple[str, dict]] = []
+    for match in re.finditer(r"- ([\w\-]+): .{0,120}?参数 Schema: (\{.*?\})\s*$", system_text, re.MULTILINE):
+        name, schema_text = match.group(1), match.group(2)
+        try:
+            schema = json.loads(schema_text)
+        except json.JSONDecodeError:
+            schema = {}
+        tools.append((name, schema))
+
+    has_result = any(
+        isinstance(m, dict) and str(m.get("content", "")).startswith("[工具结果]")
+        for m in _messages_of(body)
+    )
+    if has_result or not tools:
+        last_result = next(
+            (str(m.get("content")) for m in reversed(_messages_of(body))
+             if isinstance(m, dict) and str(m.get("content", "")).startswith("[工具结果]")),
+            "",
+        )
+        return f"根据工具执行情况回答：{last_result[:80]}（fake 演示，Loop 到此终止）"
+    name, schema = tools[0]
+    arguments = _sample_from_schema(schema) if schema else {}
+    return json.dumps({"type": "tool_call", "name": name, "arguments": arguments}, ensure_ascii=False)
+
+
 def _content(body: dict[str, Any]) -> str:
+    tool_reply = _tool_call_reply(body)
+    if tool_reply is not None:
+        return tool_reply
     schema = _schema_of(body)
     if schema is not None:
         return json.dumps(_sample_from_schema(schema), ensure_ascii=False)

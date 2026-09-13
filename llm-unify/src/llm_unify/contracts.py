@@ -2,6 +2,11 @@
 
 字段与作业要求对齐：model, messages, response_format, temperature, top_p,
 max_tokens, stream。任何适配器都不得把这些字段直接透传给上游，必须完成协议翻译。
+
+工具调用采用"prompt 约定式"（参考课程 1-1 的 agent loop）：tools 不进上游
+协议字段，而是由 Loop 层在 system 中声明工具与输出协议，模型在文本里输出
+{"type":"tool_call","name":...,"arguments":{...}}，由 Loop 解析执行——
+因此对所有协议通用，适配器层零改动。
 """
 
 from __future__ import annotations
@@ -13,6 +18,30 @@ from typing import Any, Literal
 Message = dict  # {"role": "system" | "user" | "assistant", "content": str}
 
 StructuredMode = Literal["native_schema", "json_mode", "prompt_only"]
+
+
+@dataclass(frozen=True)
+class ToolDefinition:
+    """统一工具定义：名字 + 给模型看的说明 + 参数 JSON Schema。"""
+
+    name: str
+    description: str
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"name": self.name, "description": self.description, "parameters": self.parameters}
+
+
+@dataclass(frozen=True)
+class ToolCall:
+    """从模型输出中解析出的一次工具调用请求（arguments 已解析为对象）。"""
+
+    id: str
+    name: str
+    arguments: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"id": self.id, "name": self.name, "arguments": self.arguments}
 
 
 @dataclass(frozen=True)
@@ -46,6 +75,7 @@ class UnifiedRequest:
     top_p: float | None = None
     max_tokens: int | None = None
     stream: bool = False
+    tools: list[ToolDefinition] | None = None   # 声明可用工具（触发工具调用能力）
 
     def system_messages(self) -> list[Message]:
         return [m for m in self.messages if m.get("role") == "system"]
@@ -60,7 +90,12 @@ def new_request_id() -> str:
 
 @dataclass
 class ModelResult:
-    """非流式统一响应；data 为结构化输出解析并通过校验后的对象。"""
+    """非流式统一响应；data 为结构化输出解析并通过校验后的对象。
+
+    tool_calls 非空表示模型要求调用工具（而非给出最终文本）；
+    finish_reason 此时会是各家"工具调用"语义的统一值 "tool_calls"。
+    """
+
     text: str | None = None
     data: Any | None = None
     finish_reason: str | None = None

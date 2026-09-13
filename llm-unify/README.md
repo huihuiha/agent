@@ -14,6 +14,7 @@
 | 可观测性 | token 用量、延迟（含首 token）、错误率、重试/降级次数，按 model / provider 聚合；日志与明细均携带 request_id |
 | 重试与限流 | 指数退避 + 抖动、单次 attempt 超时、按 (provider, model) 令牌桶限流（超限 429） |
 | Prompt 注入防护 | 纵深防御两道防线：模板变量值 `<untrusted_data>` 定界包裹（输入侧）+ 系统提示词泄漏扫描（输出侧，命中 403 拒绝交付），可配置开关 |
+| 工具调用与 Agent Loop | prompt 约定式工具协议（参考课程 1-1）：工具清单写进 system、从输出文本解析 tool_call JSON、结果以 user 消息喂回循环；`llm-unify agent` 命令内置 get_weather/now/calc 演示工具，含轮数上限止损与逐轮轨迹 |
 | 路由与容灾 | 别名 -> 多路由 fallback、权重负载均衡、连续失败熔断 |
 
 ---

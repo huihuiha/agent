@@ -63,8 +63,8 @@
 
 <header class="cover">
   <h1>Agent 开发手册<br>知识点 与 注意事项</h1>
-  <p>总纲 ＋ 12 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
-  <p style="font-size:13.5px;opacity:.6;">标注「进阶主题」的属于 Agent 深水区，基础篇案例未覆盖、原理先备着</p>
+  <p>总纲 ＋ 10 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
+  <p style="font-size:13.5px;opacity:.6;">工具调用与 Agent Loop 已由 loop.py 覆盖；评测、RAG、Multi-Agent 属后续课程</p>
 </header>
 
 <!-- ============ 0 总纲 ============ -->
@@ -75,7 +75,7 @@
     <ul>
       <li>Agent 能力五阶段：<b>Prompt</b>（模型应该怎样行动）→ <b>Context</b>（这一轮模型看到什么）→ <b>Harness</b>（装配模型、上下文、工具与策略）→ <b>Loop</b>（一次动作后如何持续到任务结束）→ <b>Graph</b>（哪些流程要显式状态与控制流）</li>
       <li>AI 时代工程师定位：<b>不要求</b>比 AI 写码快、背框架、默写 API；<b>必须做到</b>定义问题、约束 AI、验证结果、对系统负责</li>
-      <li>本手册坐标：01-02 是 Context，03/05/08/10 是 Prompt 与 Harness 的地基，06/07 是 Loop，Graph 与 Multi-Agent 属进阶</li>
+      <li>本手册坐标：01-02 是 Context，03/05/08/10 是 Prompt 与 Harness 的地基，06/07（Loop）已实现于 loop.py，Graph 与 Multi-Agent 属进阶</li>
     </ul>
   </div>
   <div class="sec care">
@@ -209,13 +209,14 @@
 
 <!-- ============ 6 ============ -->
 <div class="card">
-  <h2><span class="n">06</span>工具调用（tool_calls）<span class="next">进阶主题</span></h2>
+  <h2><span class="n">06</span>工具调用（tool_calls）</h2>
   <div class="sec know">
     <div class="t">📘 知识点</div>
     <ul>
       <li>Agent 的标志性能力：请求里声明<b>工具清单</b>（名字＋参数 Schema），模型返回"调用哪个工具＋什么参数"而不是文本</li>
       <li>流程：模型下指令 → 你执行 → 结果以 <code>tool</code> 角色喂回 → 模型继续决策</li>
       <li>与结构化输出的关系：<b>前者交付数据，后者下达指令</b>；共享同一套底层（Schema＋校验＋修复）</li>
+      <li>两种接法：<b>原生 tool_calls 协议</b>（每家格式不同，需适配器翻译）或 <b>prompt 约定式</b>（工具协议写进 system、从文本解析 JSON——全协议通用，本案例采用，参考课程 1-1）</li>
     </ul>
   </div>
   <div class="sec care">
@@ -227,12 +228,12 @@
       <li>警惕<b>间接注入</b>：工具返回的内容（网页、文件）同样不可信，别直接拼进上下文</li>
     </ul>
   </div>
-  <div class="cite todo">案例未实现（课程下一层）；llm-unify 的结构化输出正是接工具前的必修地基</div>
+  <div class="cite case">llm-unify loop.py：prompt 约定式工具协议 + 白名单解析 + 内置 get_weather/now/calc 演示工具</div>
 </div>
 
 <!-- ============ 7 ============ -->
 <div class="card">
-  <h2><span class="n">07</span>Agent Loop（核心循环）<span class="next">进阶主题</span></h2>
+  <h2><span class="n">07</span>Agent Loop（核心循环）</h2>
   <div class="diagram">while 轮数 < 上限:
     响应 = LLM(messages, tools)
     if 响应.tool_calls:
@@ -258,7 +259,7 @@
       <li>工具结果喂回时注意上下文膨胀——长输出先摘要再入列</li>
     </ul>
   </div>
-  <div class="cite todo">案例未实现循环编排（课程下一层）；llm-unify 是循环的"供水系统"，保证每轮调用可靠</div>
+  <div class="cite case">llm-unify loop.py：run_agent（max_turns 止损、工具异常驯化、逐轮 request_id 轨迹）+ CLI agent 命令</div>
 </div>
 
 <!-- ============ 8 ============ -->
@@ -333,54 +334,8 @@
   <div class="cite case">llm-unify 整个骨架：rate_limit / retry / router / observability（Retry-After 采用列为已知差距）</div>
 </div>
 
-<!-- ============ 11 ============ -->
-<div class="card">
-  <h2><span class="n">11</span>评测（Evals）<span class="next">进阶主题</span></h2>
-  <div class="sec know">
-    <div class="t">📘 知识点</div>
-    <ul>
-      <li>Agent 的行为 = <b>prompt × 模型 × 参数</b> 的乘积——任何一项变了行为就变，<b>没有评测的调优是玄学</b></li>
-      <li>评测三件：用例集（输入＋期望）→ 批量执行 → 判分（精确匹配 / 规则断言 / 结构校验 / <b>LLM-as-judge</b> 让另一个模型打分）</li>
-      <li>三大用途：<b>版本对比</b>（prompt v1 vs v2）、<b>模型对比</b>（A 家 vs B 家）、<b>回归</b>（改完不退步）</li>
-    </ul>
-  </div>
-  <div class="sec care">
-    <div class="t">⚠️ 注意事项</div>
-    <ul>
-      <li><b>先建评测、再改 prompt</b>——不是改坏了才想起要基准</li>
-      <li>用例输入要固定；模型是概率的——要么固定采样参数，要么多次采样取分布</li>
-      <li>LLM-as-judge 有偏差（位置偏好、长答偏好、自我偏好），<b>重要结论要人工抽检</b></li>
-      <li>评测集本身也是代码：要版本管理、要随能力演进更新</li>
-    </ul>
-  </div>
-  <div class="cite todo">案例未含评测模块（课程后续主题）；79 个单测演示了"把行为钉死"的同一思想</div>
-</div>
-
-<!-- ============ 12 ============ -->
-<div class="card">
-  <h2><span class="n">12</span>成本控制<span class="next">进阶主题</span></h2>
-  <div class="sec know">
-    <div class="t">📘 知识点</div>
-    <ul>
-      <li>成本公式：<b>（输入 token ＋ 输出 token）× 轮数 × 单价</b>——输出通常比输入贵数倍，而 Agent Loop 按轮数放大一切</li>
-      <li>四个抓手：<b>模型分级</b>（简单任务走便宜模型，路由解决）、<b>上下文精简</b>（记忆管理，见主题 02）、<b>输出限长</b>（max_tokens）、<b>前缀缓存</b>（prompt caching：重复前缀计费打折）</li>
-      <li>前提是<b>每次调用的成本可归集</b>（request_id × usage 落库），否则优化无从下手</li>
-    </ul>
-  </div>
-  <div class="sec care">
-    <div class="t">⚠️ 注意事项</div>
-    <ul>
-      <li><b>防死循环就是防账单爆炸</b>——轮数上限是成本闸门，不只是稳定性闸门</li>
-      <li>max_tokens 两面性：既是成本闸门也是<b>截断风险</b>（结构化输出被截成非法 JSON，进修复循环反而更贵）</li>
-      <li>前缀缓存要求前缀<b>完全一致</b>——system 放最前、模板少动、变量放后段</li>
-      <li>便宜模型多出的重试/修复轮次，可能比贵模型一次到位更贵——<b>按任务实测</b>而不是看单价</li>
-    </ul>
-  </div>
-  <div class="cite todo">llm-unify 已有成本归集（usage×单价落库）与模型分级路由；前缀缓存依赖上游能力，属接入层进阶</div>
-</div>
-
 <footer>
-  🧭 学习路线六阶段：模型调用 → Tool Runtime → Loop 与 Harness → Context / Memory / RAG → Multi-Agent 与 Eval → Production Ready<br>
+  🧭 学习路线六阶段：模型调用 ✅ → Tool Runtime ✅ → Loop 与 Harness ✅ → Context / Memory / RAG → Multi-Agent 与 Eval → Production Ready<br>
   📦 案例：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无 Key 可跑）<br>
   🎬 本手册：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a> ｜ 📄 深度版见飞书文档
 </footer>
