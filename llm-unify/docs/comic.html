@@ -63,9 +63,30 @@
 
 <header class="cover">
   <h1>Agent 开发手册<br>知识点 与 注意事项</h1>
-  <p>12 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
+  <p>总纲 ＋ 12 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
   <p style="font-size:13.5px;opacity:.6;">标注「进阶主题」的属于 Agent 深水区，基础篇案例未覆盖、原理先备着</p>
 </header>
+
+<!-- ============ 0 总纲 ============ -->
+<div class="card">
+  <h2><span class="n">00</span>总纲：Agent 的五个能力阶段</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>Agent 能力五阶段：<b>Prompt</b>（模型应该怎样行动）→ <b>Context</b>（这一轮模型看到什么）→ <b>Harness</b>（装配模型、上下文、工具与策略）→ <b>Loop</b>（一次动作后如何持续到任务结束）→ <b>Graph</b>（哪些流程要显式状态与控制流）</li>
+      <li>AI 时代工程师定位：<b>不要求</b>比 AI 写码快、背框架、默写 API；<b>必须做到</b>定义问题、约束 AI、验证结果、对系统负责</li>
+      <li>本手册坐标：01-02 是 Context，03/05/08/10 是 Prompt 与 Harness 的地基，06/07 是 Loop，Graph 与 Multi-Agent 属进阶</li>
+    </ul>
+  </div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>核心骨架自己写，样板代码交给 AI</b>——全部交给 AI 写，出了问题你修不动</li>
+      <li>框架（LangGraph、Codex…）是<b>观察窗口不是终点</b>：先懂原理再用框架，反过来会被框架绑架</li>
+    </ul>
+  </div>
+  <div class="cite case">llm-unify 覆盖 Harness 阶段的骨架：统一调用、流式、结构化、稳定性、可观测</div>
+</div>
 
 <!-- ============ 1 ============ -->
 <div class="card">
@@ -75,6 +96,7 @@
     <ul>
       <li>调用本质：<b>消息列表进 → 文本出</b>。三种角色：<code>system</code>（规则）/ <code>user</code>（输入）/ <code>assistant</code>（模型说过的话，多轮必须带上才有记忆）</li>
       <li><b>temperature</b>：随机性旋钮；<b>token</b>：计费与理解的最小单位；<b>上下文窗口</b>：一次能塞的记忆上限</li>
+      <li><b>参数不是质量旋钮</b>：各参数职责明确（temperature 管发散度、top_p 管候选池）——先弄清每个参数管什么再动手，"调参调优"多半是错觉</li>
       <li>最重要的认知：<b>输出是概率性的</b>——同输入不保证同输出，承诺的格式也不总兑现</li>
     </ul>
   </div>
@@ -104,6 +126,7 @@
     <div class="t">⚠️ 注意事项</div>
     <ul>
       <li><b>别等窗口报错才处理</b>——接近上限就要有裁剪/摘要策略（超窗异常是最后防线不是设计）</li>
+      <li><b>给上下文设三份预算</b>：指令、对话历史、工具结果各自占多少提前规划，超了按类型截断——而不是整体堆到爆再一刀切</li>
       <li>工具结果直接喂回会<b>快速膨胀上下文</b>——长输出先摘要再入列</li>
       <li>历史消息也是"发生过的事"：被污染过的轮次要能标记与剔除；<b>RAG 检索回来的内容同样不可信</b>（间接注入的入口之一）</li>
       <li>多轮 assistant 历史必须带上，否则模型每轮"失忆重来"</li>
@@ -144,6 +167,7 @@
       <li>体验关键指标是<b>首 token 延迟（TTFT）</b>，不是总延迟——第一个字出现的时刻决定"卡不卡"</li>
       <li>技术：SSE（POST 也能流式）；把各家流式事件<b>统一成自己的事件协议</b>（start/delta/end/error），前端一套代码通吃</li>
       <li>Agent 特有价值：流式让<b>执行过程可见</b>（"正在查询订单…"），不再黑箱转圈</li>
+      <li>完整链路六阶段：<b>消费模型流</b>（转内部事件、记 TTFT）→ <b>事件带 run_id 与序号</b>（终态唯一）→ <b>SSE 网关</b>（创建与订阅分离）→ <b>客户端</b>（分帧解析、按序号去重、渲染节流）→ <b>取消</b> → <b>恢复</b>（断线靠事件重放，长文靠 checkpoint）</li>
     </ul>
   </div>
   <div class="sec care">
@@ -151,6 +175,7 @@
     <ul>
       <li><b>不可撤回</b>：已推送的内容收不回——<b>重试/降级只在首个增量之前有效</b>，之后只能报错终止</li>
       <li>断流要给用户明确反馈（错误事件），别静默挂起让人干等</li>
+      <li><b>关闭连接 ≠ 停止生成</b>：用户断开后要有显式的取消状态去停上游，否则白烧 token；断线恢复靠事件重放（客户端按序号去重），超长输出靠 checkpoint 续传</li>
       <li>调试陷阱：浏览器 DevTools 对 POST-SSE 的 EventStream 面板<b>显示空白是已知问题</b>，不代表没数据</li>
       <li>统计信息（usage/延迟）挂在结束事件上带回，别在前端猜</li>
     </ul>
@@ -167,6 +192,7 @@
       <li>用 <b>JSON Schema</b> 定义输出契约（字段/类型/必填），让模型输出机器可解析的数据</li>
       <li>模型能力分三档：<b>原生 schema</b>（Responses 协议）→ <b>json_mode</b>（保语法不保字段）→ <b>prompt 注入</b>（全靠说服）</li>
       <li><b>修复循环</b>：校验失败把错题详情喂回去让它自纠错——这是 Agent"自我修正"的最小形态</li>
+      <li>定义侧<b>四层协议</b>：业务场景定字段 → 数据模型（如 Pydantic）作单一来源 → 导出 JSON Schema → 交给原生约束生成；验收侧<b>三层校验</b>：格式解析 → 字段规则 → 业务规则</li>
     </ul>
   </div>
   <div class="sec care">
@@ -226,6 +252,7 @@
     <div class="t">⚠️ 注意事项</div>
     <ul>
       <li><b>必须设最大轮数上限</b>——模型陷入"再查一下"的死循环时，烧的是你的钱</li>
+      <li>最小 Agent Loop <b>五个检查点</b>（逐条对照你的实现）：① 模型只提出候选动作，不直接执行 ② Loop 负责判断继续还是结束 ③ 所有 Tool Call 统一进 Runtime（一个出口才管得住权限与审计）④ Tool Result 必须写回 Context ⑤ Loop 有确定性运行上限</li>
       <li>别只信 finish_reason：模型说"完成"不代表真的完成，关键任务要有<b>结果校验</b>兜底</li>
       <li>每轮记录观测（request_id 串联整条轨迹），出问题能回放"它当时看到了什么"</li>
       <li>工具结果喂回时注意上下文膨胀——长输出先摘要再入列</li>
@@ -241,13 +268,14 @@
     <div class="t">📘 知识点</div>
     <ul>
       <li>System Prompt 是 Agent 的<b>行为契约</b>，五要素：<b>角色目标 / 行为约束 / 输出契约 / 示例(few-shot) / 异常处理</b></li>
-      <li>few-shot 用例子立标杆，远胜用形容词描述（"像示例那样"＞"要简洁专业"）</li>
+      <li>一条主线四步：<b>定义岗位</b>（岗位说明书，不是角色扮演）→ <b>校准边界</b>（few-shot 精选 2-3 个，与规则分工）→ <b>组织任务</b>（拆成可观察阶段与证据依赖，不等于一句"请一步一步思考"；简单任务不强行拆解）→ <b>工程化管理</b>（模板化、注入防护、版本管理）</li>
       <li><b>Prompt 即代码</b>：版本号、只增不改、可 diff、可回滚</li>
     </ul>
   </div>
   <div class="sec care">
     <div class="t">⚠️ 注意事项</div>
     <ul>
+      <li>few-shot 用例子立标杆，远胜用形容词描述——但示例贵精不贵多（2-3 个），且 <b>AI 生成的示例必须人工审查</b>再入库</li>
       <li>改一个词行为就漂移——<b>没有版本管理的 prompt 调优全是玄学</b>，出事连"昨晚改了啥"都不知道</li>
       <li>用户提交的模板要<b>沙箱渲染</b>（SSTI 攻击能逃逸到代码执行）；变量缺失<b>立即报错</b>，半成品 prompt 比报错危险</li>
       <li>改 prompt 要有<b>评测基准</b>对照——不然"感觉变好了"可能是错觉（详见主题 11）</li>
@@ -298,6 +326,8 @@
       <li>抖动别省——所有客户端同一毫秒集体重试会把刚恢复的上游再次打挂（惊群）</li>
       <li><b>失败请求也要落库</b>——错误率统计的分母不能缺</li>
       <li>熔断/限流是进程内状态：多副本部署要换集中式实现（如 Redis）</li>
+      <li>Gateway 三条边界：<b>API Key 只留在网关层</b>（业务侧永远拿不到）；<b>网关不做透明代理</b>（治理与留痕是它存在的意义）；流式 fallback 以<b>是否已输出</b>为界</li>
+      <li>验收一个网关的三种方式：<b>口头讲清调用主链</b>、<b>代码补骨架抓错误实现</b>、<b>迁移一个新 Provider</b> 验证扩展性</li>
     </ul>
   </div>
   <div class="cite case">llm-unify 整个骨架：rate_limit / retry / router / observability（Retry-After 采用列为已知差距）</div>
@@ -350,7 +380,7 @@
 </div>
 
 <footer>
-  🧭 学习路线：基础篇（01-05、08-10，案例已覆盖）→ 进阶篇（06/07 工具与循环 → 02 的 RAG → 11 评测 → 12 成本）<br>
+  🧭 学习路线六阶段：模型调用 → Tool Runtime → Loop 与 Harness → Context / Memory / RAG → Multi-Agent 与 Eval → Production Ready<br>
   📦 案例：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无 Key 可跑）<br>
   🎬 本手册：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a> ｜ 📄 深度版见飞书文档
 </footer>
