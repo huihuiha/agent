@@ -85,7 +85,7 @@
       <li>框架（LangGraph、Codex…）是<b>观察窗口不是终点</b>：先懂原理再用框架，反过来会被框架绑架</li>
     </ul>
   </div>
-  <div class="cite case">llm-unify 覆盖 Harness 阶段的骨架：统一调用、流式、结构化、稳定性、可观测</div>
+  <div class="cite case">llm-unify 覆盖 Harness 骨架（统一调用/流式/结构化/稳定性/可观测）与 Loop（loop.py 工具循环）</div>
 </div>
 
 <!-- ============ 1 ============ -->
@@ -279,7 +279,7 @@
       <li>few-shot 用例子立标杆，远胜用形容词描述——但示例贵精不贵多（2-3 个），且 <b>AI 生成的示例必须人工审查</b>再入库</li>
       <li>改一个词行为就漂移——<b>没有版本管理的 prompt 调优全是玄学</b>，出事连"昨晚改了啥"都不知道</li>
       <li>用户提交的模板要<b>沙箱渲染</b>（SSTI 攻击能逃逸到代码执行）；变量缺失<b>立即报错</b>，半成品 prompt 比报错危险</li>
-      <li>改 prompt 要有<b>评测基准</b>对照——不然"感觉变好了"可能是错觉（详见主题 11）</li>
+      <li>改 prompt 要有<b>评测基准</b>对照——不然"感觉变好了"可能是错觉（评测属后续课程，案例未含）</li>
       <li>约束写在 system（高特权），不要写在容易被覆盖的位置</li>
     </ul>
   </div>
@@ -306,7 +306,7 @@
       <li>安全策略集中在网关层做——业务方各自为战必有遗漏</li>
     </ul>
   </div>
-  <div class="cite case">llm-unify security.py 两道可配置防线（案例无工具，权限最小化暂不适用）</div>
+  <div class="cite case">llm-unify security.py 两道可配置防线；权限最小化落点即 loop.py 的 executor 工具白名单</div>
 </div>
 
 <!-- ============ 10 ============ -->
