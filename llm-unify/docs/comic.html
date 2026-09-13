@@ -104,7 +104,7 @@
     <div class="t">⚠️ 注意事项</div>
     <ul>
       <li><b>用户输入永远不要拼进 system</b>——system 是规则层，user 是数据层，混了就是注入漏洞</li>
-      <li>调试期固定 temperature；<b>采样参数要随调用日志落库</b>——复现某次调用时缺了参数就不算完整证据</li>
+      <li>调试期固定 temperature，否则问题无法复现</li>
       <li>记录每次的 <code>usage</code>，成本意识从第一天开始；对模型输出<b>永远保留校验这一步</b></li>
     </ul>
   </div>
