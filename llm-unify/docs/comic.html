@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《LLM 翻译公司》— llm-unify 项目漫画</title>
+<style>
+  :root {
+    --ink: #1f2430; --paper: #fffdf6; --line: #2b2b2b;
+    --blue: #2563eb; --blue-bg: #dbeafe; --purple: #7c3aed; --purple-bg: #ede9fe;
+    --teal: #0d9488; --teal-bg: #ccfbf1; --amber: #d97706; --amber-bg: #fef3c7;
+    --rose: #db2777; --rose-bg: #fce7f3; --red: #dc2626; --red-bg: #fef2f2;
+    --green: #16a34a; --green-bg: #f0fdf4;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d8; color: var(--ink);
+         font: 16px/1.7 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  header.cover { background: var(--ink); color: #fff; border: 4px solid var(--line);
+    border-radius: 18px; padding: 42px 28px; text-align: center; margin-bottom: 28px;
+    box-shadow: 8px 8px 0 rgba(0,0,0,.15); }
+  header.cover h1 { font-size: 34px; margin: 0 0 10px; letter-spacing: 2px; }
+  header.cover p { margin: 4px 0; opacity: .85; }
+  header.cover .tags { margin-top: 14px; }
+  header.cover .tag { display: inline-block; border: 1.5px solid #ffffff88; border-radius: 999px;
+    padding: 2px 12px; margin: 3px; font-size: 13px; }
+
+  .panel { background: var(--paper); border: 3.5px solid var(--line); border-radius: 16px;
+    padding: 22px 22px 16px; margin-bottom: 26px; box-shadow: 6px 6px 0 rgba(0,0,0,.12);
+    position: relative; }
+  .panel h2 { margin: 0 0 14px; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .no { background: var(--ink); color: #fff; border-radius: 8px; font-size: 13px;
+    padding: 1px 9px; font-family: monospace; }
+
+  .scene { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+  .actor { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 76px; }
+  .actor .face { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 27px; border: 3px solid var(--line); }
+  .actor .name { font-size: 12px; font-weight: 700; }
+  .actor.small .face { width: 44px; height: 44px; font-size: 22px; }
+
+  .bubble { position: relative; background: #fff; border: 2.5px solid var(--line);
+    border-radius: 14px; padding: 9px 14px; max-width: 430px; font-size: 15px; }
+  .bubble.left { border-bottom-left-radius: 2px; }
+  .bubble.right { border-bottom-right-radius: 2px; }
+  .bubble.think { background: #f8fafc; border-style: dashed; }
+  .bubble b { color: var(--blue); }
+  .bubble code { background: #eef2ff; border-radius: 5px; padding: 0 5px;
+    font-family: Consolas, monospace; font-size: 13.5px; color: #3730a3; }
+
+  .note { margin-top: 14px; background: #f4f4ef; border-left: 4px solid var(--ink);
+    border-radius: 0 10px 10px 0; padding: 9px 14px; font-size: 13.5px; color: #444; }
+  .note b { color: var(--ink); }
+  .note code { font-family: Consolas, monospace; font-size: 12.5px; background: #e8e8e0;
+    padding: 0 4px; border-radius: 4px; }
+
+  .c-blue { background: var(--blue-bg); } .c-purple { background: var(--purple-bg); }
+  .c-teal { background: var(--teal-bg); } .c-amber { background: var(--amber-bg); }
+  .c-rose { background: var(--rose-bg); } .c-red { background: var(--red-bg); }
+  .c-green { background: var(--green-bg); } .c-ink { background: #e5e5e5; }
+
+  .sign { position: absolute; top: -14px; right: 18px; background: var(--amber);
+    color: #fff; font-size: 12px; font-weight: 700; padding: 2px 12px; border-radius: 999px;
+    border: 2.5px solid var(--line); transform: rotate(2deg); }
+
+  footer { text-align: center; color: #6b7280; font-size: 13.5px; margin-top: 30px; line-height: 2; }
+  footer a { color: var(--blue); }
+  @media (max-width: 640px) { header.cover h1 { font-size: 26px; } .bubble { max-width: 88%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <h1>《LLM 翻译公司》</h1>
+  <p>—— 一次调用，直连所有大模型 ——</p>
+  <p style="font-size:14px; margin-top:10px;">llm-unify · 统一模型调用服务 · week01 作业漫画版</p>
+  <div class="tags">
+    <span class="tag">多协议适配</span><span class="tag">流式输出</span><span class="tag">结构化输出</span>
+    <span class="tag">重试/熔断/限流</span><span class="tag">Prompt 版本</span><span class="tag">可观测</span>
+  </div>
+</header>
+
+<!-- ============ 第 1 格 ============ -->
+<div class="panel">
+  <span class="sign">序章</span>
+  <h2><span class="no">01</span>业务小哥的烦恼</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble left">我想调个 DeepSeek 写总结、调个 Claude 做评审……结果发现<b>三家 API 说三种"方言"</b>！</div>
+    </div>
+    <div class="row">
+      <div class="actor small"><div class="face c-purple">🎩</div><div class="name">Responses 协议</div></div>
+      <div class="bubble left">system 请放 <code>instructions</code>，上限叫 <code>max_output_tokens</code>～</div>
+    </div>
+    <div class="row">
+      <div class="actor small"><div class="face c-rose">🥷</div><div class="name">Anthropic 协议</div></div>
+      <div class="bubble left">system 要放顶层参数！还要 <code>x-api-key</code> 头！<code>max_tokens</code> 必填！</div>
+    </div>
+    <div class="row">
+      <div class="actor small"><div class="face c-teal">🧧</div><div class="name">Chat 协议</div></div>
+      <div class="bubble left">俺们 system 放 messages 里，流式要 <code>stream_options</code> 才给 usage～</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble right">😭 每家的字段名、鉴权头、流式事件、错误格式<b>全都不一样</b>，我的代码里已经 if/else 满天飞了……</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：这就是"协议不兼容"——需要一层<b>防腐层</b>把差异挡在业务之外。对应代码 <code>adapters/</code> 三个适配器。</div>
+</div>
+
+<!-- ============ 第 2 格 ============ -->
+<div class="panel">
+  <h2><span class="no">02</span>公司开张：一张菜单走天下</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-amber">📋</div><div class="name">统一协议</div></div>
+      <div class="bubble left">别慌！本公司只提供<b>一张菜单</b>：<code>model / messages / response_format / temperature / top_p / max_tokens / stream</code></div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble right">就这 7 个字段？就能用所有模型？</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-amber">📋</div><div class="name">统一协议</div></div>
+      <div class="bubble left">对，这是所有主流 LLM API 的<b>公共最大交集</b>。你写一次，我们翻译成各家方言。</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：统一调用协议 <code>UnifiedRequest</code>（<code>contracts.py</code>）——业务层永不接触上游原始报文。</div>
+</div>
+
+<!-- ============ 第 3 格 ============ -->
+<div class="panel">
+  <h2><span class="no">03</span>三位翻译官：适配器模式</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble right">这是我的请求，请给我 <code>deepseek-v4-pro</code> 的回答。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-purple">🎩</div><div class="name">Responses 翻译官</div></div>
+      <div class="bubble left">收到！system 搬进 <code>instructions</code>，结构化输出走<b>原生 json_schema</b>（硬约束）。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-rose">🥷</div><div class="name">Anthropic 翻译官</div></div>
+      <div class="bubble left">到我这儿没有结构化字段，我把 Schema <b>写进 system 说服模型</b>（prompt_only 降级档）。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-teal">🧧</div><div class="name">DeepSeek 翻译官</div></div>
+      <div class="bubble left">俺是中间档：开 <code>json_object</code> 保语法 + Schema 注入保语义（json_mode）～</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-amber">📋</div><div class="name">统一协议</div></div>
+      <div class="bubble left">无论谁接单，回给你的都是<b>同一种格式</b>（ModelResult / 事件流）。换供应商？改一行配置。</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：适配器模式 + 注册表（<code>ADAPTER_REGISTRY</code>）。新增协议 = 1 个子类 + 1 行注册，业务层零改动（开闭原则）。</div>
+</div>
+
+<!-- ============ 第 4 格 ============ -->
+<div class="panel">
+  <h2><span class="no">04</span>前台领班：模型路由</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-ink">🧭</div><div class="name">Router 领班</div></div>
+      <div class="bubble left">客人点名 <code>deepseek-v4-pro</code>？我查路由表——主路由 Responses 官，备路由 Anthropic 官。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble right">为什么要备用的？</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-ink">🧭</div><div class="name">Router 领班</div></div>
+      <div class="bubble left">主官病了<b>自动换备官</b>（fallback）；忙不过来还能<b>按权重分流</b>（负载均衡）。全楼谁身体不好，我都记在小本本上。</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：<code>ModelRouter</code>（<code>router.py</code>）——别名路由、priority/weighted_random 两策略、熔断状态记录。</div>
+</div>
+
+<!-- ============ 第 5 格 ============ -->
+<div class="panel">
+  <h2><span class="no">05</span>门口三兄弟：限流 · 重试 · 熔断</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-amber">🎫</div><div class="name">令牌门卫</div></div>
+      <div class="bubble left">进门先领<b>令牌</b>！桶里就 10 个，每秒补 1 个——管你多急，超速就请回（429）。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
+      <div class="bubble left">上游 429/超时/5xx？别急，我<b>指数退避</b>地重试：0.5s → 1s → 2s，还得<b>抖一抖</b>（jitter），免得大家同一毫秒冲上去把刚醒的上游又撞晕。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-red">🛡️</div><div class="name">熔断保安</div></div>
+      <div class="bubble left">同一家连败 3 次？<b>拉闸！</b>冷却 20 秒内一个请求都不许送过去——快速失败，别陪葬。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble right">那 401 密码错、输入超长这种"注定失败"的呢？</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
+      <div class="bubble left">那种我<b>一次都不重试</b>（retryable=False）——但会问问隔壁备官愿不愿意接（换路由的 Key 可能是对的）。</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：稳定性三件套各管一时段——限流管常态、重试管瞬时故障、熔断管持续故障（<code>rate_limit.py / retry.py / router.py</code>）。</div>
+</div>
+
+<!-- ============ 第 6 格 ============ -->
+<div class="panel">
+  <h2><span class="no">06</span>质检员与改作业的老师：结构化输出</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-purple">🔍</div><div class="name">质检员</div></div>
+      <div class="bubble left">模型说输出 JSON？<b>我不信。</b>不管上游承诺了什么，我都本地再验一遍：语法 + JSON Schema 逐条核对。</div>
+    </div>
+    <div class="row">
+      <div class="actor small"><div class="face c-teal">🤖</div><div class="name">模型</div></div>
+      <div class="bubble left">呜……我交了 <code>{"name": 123}</code>，name 要求字符串……</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-amber">✏️</div><div class="name">修复老师</div></div>
+      <div class="bubble left">来，这是你的错题详情——<b>哪条不对、Schema 是什么</b>都给你，在原文基础上改，别从头重写（修复循环）。</div>
+    </div>
+    <div class="row">
+      <div class="actor small"><div class="face c-teal">🤖</div><div class="name">模型</div></div>
+      <div class="bubble left"><code>{"name": "Ada"}</code> ✅</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>："不信任上游"原则——本地始终校验（<code>structured.py</code>）；校验失败进<b>修复循环</b>（喂回错误详情重发，<code>service.py</code>），耗尽才抛 422。</div>
+</div>
+
+<!-- ============ 第 7 格 ============ -->
+<div class="panel">
+  <h2><span class="no">07</span>直播员：流式输出</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-rose">📺</div><div class="name">直播员</div></div>
+      <div class="bubble left">等全部写完再给你？太慢了！我<b>边生成边播</b>：<code>start → delta → delta → … → end</code>。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
+      <div class="bubble right">那 JSON 还没写完怎么校验？</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-rose">📺</div><div class="name">直播员</div></div>
+      <div class="bubble left">播归播，验归验——我<b>先转发碎片</b>（你看打字机效果），流结束再<b>整体校验</b>，合格就补发一个 <code>structured</code> 事件。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
+      <div class="bubble left">提醒：直播开始后（第一个字已播出去）我就<b>不重试了</b>——重播会让观众看到鬼畜的双重内容！</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：SSE 类型化事件协议（start/delta/structured/end/error）+ "不可撤回"语义（首 delta 后不重试）+ TTFT 首 token 指标。</div>
+</div>
+
+<!-- ============ 第 8 格 ============ -->
+<div class="panel">
+  <h2><span class="no">08</span>监控室、档案馆与安检口</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-ink">👁️</div><div class="name">监控室</div></div>
+      <div class="bubble left">每次调用都记档案：<b>request_id 贯穿全程</b>，tokens/延迟/首token/重试/降级/错误率，按模型和供应商随时查账。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-purple">📚</div><div class="name">档案馆</div></div>
+      <div class="bubble left">Prompt 当代码管——<b>版本只增不改</b>，随时 diff、随时回滚，线上行为永远可复现。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-red">🛂</div><div class="name">安检员</div></div>
+      <div class="bubble left">用户输入里藏"忽略以上指令"？先<b>打包贴标签</b>（&lt;untrusted_data&gt; 包裹），输出敢泄漏系统提示词？<b>直接没收</b>（403）！</div>
+    </div>
+  </div>
+  <div class="note"><b>知识点</b>：可观测性（<code>observability.py</code>）、Prompt 版本管理（<code>prompts.py</code>，含 Jinja2 沙箱 + StrictUndefined）、注入防护两道防线（<code>security.py</code>）。</div>
+</div>
+
+<!-- ============ 第 9 格 ============ -->
+<div class="panel">
+  <span class="sign">终章</span>
+  <h2><span class="no">09</span>三种打开方式</h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-blue">⌨️</div><div class="name">CLI</div></div>
+      <div class="bubble left"><code>llm-unify generate / stream / structured / stats</code>——命令行一把梭。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-teal">🔌</div><div class="name">HTTP API</div></div>
+      <div class="bubble left"><code>POST /v1/generate</code> 统一协议 REST + SSE，OpenAPI 文档自带。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-rose">🖥️</div><div class="name">Web 控制台</div></div>
+      <div class="bubble left">聊天/结构化/Prompt版本/统计/路由五个视图，浏览器打开 <code>/ui</code> 即用。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-green">✅</div><div class="name">验收</div></div>
+      <div class="bubble left"><b>79 个单测全绿</b>（全部 mock 上游、不花一分钱）+ 无 Key 演示模式（fake）+ 真实 DeepSeek 调用验证通过。</div>
+    </div>
+  </div>
+  <div class="note"><b>一句话总结</b>：把"每家 API 一种方言"的混乱世界，收敛成"一张菜单、一个入口、一套治理"——这就是 llm-unify。</div>
+</div>
+
+<footer>
+  📦 源码：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → <code>llm-unify/</code> 子目录<br>
+  🎬 本漫画：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a>（单文件，可离线打开）<br>
+  🧪 验收：<code>uv sync --extra dev && uv run pytest -q</code> → 79 passed
+</footer>
+</div>
+</body>
+</html>
