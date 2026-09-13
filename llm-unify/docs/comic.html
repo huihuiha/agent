@@ -3,290 +3,283 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>《Agent 解剖图鉴》——一张图读懂 Agent 开发的全部器官</title>
+<title>Agent 开发知识点与注意事项手册</title>
 <style>
   :root {
     --ink: #1f2430; --paper: #fffdf6; --line: #2b2b2b;
-    --blue: #2563eb; --blue-bg: #dbeafe; --purple: #7c3aed; --purple-bg: #ede9fe;
-    --teal: #0d9488; --teal-bg: #ccfbf1; --amber: #d97706; --amber-bg: #fef3c7;
-    --rose: #db2777; --rose-bg: #fce7f3; --red: #dc2626; --red-bg: #fef2f2;
-    --green: #16a34a; --green-bg: #f0fdf4;
+    --blue: #2563eb; --blue-bg: #dbeafe; --amber: #d97706; --amber-bg: #fef3c7;
+    --red: #dc2626; --red-bg: #fef2f2; --teal: #0d9488; --teal-bg: #ccfbf1;
+    --green: #16a34a; --green-bg: #f0fdf4; --purple: #7c3aed; --purple-bg: #ede9fe;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: #e9e4d8; color: var(--ink);
-         font: 16px/1.7 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; }
+         font: 16px/1.75 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
 
   header.cover { background: var(--ink); color: #fff; border: 4px solid var(--line);
-    border-radius: 18px; padding: 40px 26px; text-align: center; margin-bottom: 28px;
+    border-radius: 18px; padding: 38px 26px; text-align: center; margin-bottom: 28px;
     box-shadow: 8px 8px 0 rgba(0,0,0,.15); }
-  header.cover h1 { font-size: 32px; margin: 0 0 8px; }
+  header.cover h1 { font-size: 30px; margin: 0 0 8px; }
   header.cover p { margin: 4px 0; opacity: .85; }
-  header.cover .formula { margin: 18px auto 6px; display: inline-block; background: #ffffff14;
-    border: 1.5px solid #ffffff55; border-radius: 12px; padding: 10px 18px; font-size: 15px; line-height: 1.9; }
-  header.cover .formula b { color: #fbbf24; }
 
-  .panel { background: var(--paper); border: 3.5px solid var(--line); border-radius: 16px;
-    padding: 22px 22px 16px; margin-bottom: 26px; box-shadow: 6px 6px 0 rgba(0,0,0,.12);
-    position: relative; }
-  .panel h2 { margin: 0 0 4px; font-size: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .panel h2 .organ { font-size: 30px; }
-  .panel h2 .what { font-size: 12.5px; color: #6b7280; font-family: monospace; }
+  .card { background: var(--paper); border: 3.5px solid var(--line); border-radius: 16px;
+    padding: 20px 22px 18px; margin-bottom: 24px; box-shadow: 6px 6px 0 rgba(0,0,0,.12); }
+  .card h2 { margin: 0 0 12px; font-size: 19px; display: flex; align-items: center; gap: 10px; }
+  .card h2 .n { background: var(--ink); color: #fff; border-radius: 8px; font-size: 13px;
+    padding: 1px 10px; font-family: monospace; }
 
-  .scene { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-  .row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-  .actor { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 72px; }
-  .actor .face { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 27px; border: 3px solid var(--line); }
-  .actor .name { font-size: 12px; font-weight: 700; }
-  .actor.small .face { width: 44px; height: 44px; font-size: 22px; }
+  .sec { border-radius: 12px; padding: 12px 16px; margin-top: 12px; }
+  .sec .t { font-weight: 800; font-size: 14.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .know { background: var(--teal-bg); border: 2px solid var(--teal); }
+  .know .t { color: var(--teal); }
+  .care { background: var(--amber-bg); border: 2px solid var(--amber); }
+  .care .t { color: var(--amber); }
 
-  .bubble { position: relative; background: #fff; border: 2.5px solid var(--line);
-    border-radius: 14px; padding: 9px 14px; max-width: 480px; font-size: 15px; }
-  .bubble.left { border-bottom-left-radius: 2px; }
-  .bubble b { color: var(--blue); }
-  .bubble code { background: #eef2ff; border-radius: 5px; padding: 0 5px;
-    font-family: Consolas, monospace; font-size: 13.5px; color: #3730a3; }
+  .sec ul { margin: 0; padding-left: 22px; }
+  .sec li { margin: 5px 0; font-size: 14.5px; }
+  .sec li b { color: var(--ink); }
+  .sec code { background: #ffffffaa; border-radius: 5px; padding: 0 5px;
+    font-family: Consolas, monospace; font-size: 13px; color: #3730a3; }
+  .care li::marker { color: var(--amber); }
+  .know li::marker { color: var(--teal); }
+
   .diagram { background: #f6f5ee; border: 2px dashed #b9b3a4; border-radius: 12px;
-    padding: 12px 14px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.8;
-    overflow-x: auto; white-space: pre; color: #374151; }
+    padding: 10px 14px; font-family: Consolas, monospace; font-size: 12.8px; line-height: 1.8;
+    overflow-x: auto; white-space: pre; color: #374151; margin-top: 12px; }
 
-  .know { margin-top: 14px; border: 2.5px dashed #b9b3a4; border-radius: 12px; padding: 10px 14px;
-    font-size: 13.5px; color: #444; background: #faf9f2; }
-  .know .k { font-weight: 700; color: var(--ink); }
-  .know code { font-family: Consolas, monospace; font-size: 12.5px; background: #eceadf;
-    padding: 0 4px; border-radius: 4px; }
-
-  .c-blue { background: var(--blue-bg); } .c-purple { background: var(--purple-bg); }
-  .c-teal { background: var(--teal-bg); } .c-amber { background: var(--amber-bg); }
-  .c-rose { background: var(--rose-bg); } .c-red { background: var(--red-bg); }
-  .c-green { background: var(--green-bg); } .c-ink { background: #e5e5e5; }
-
-  .badge { position: absolute; top: -14px; right: 18px; background: var(--teal); color: #fff;
-    font-size: 12px; font-weight: 700; padding: 2px 12px; border-radius: 999px;
-    border: 2.5px solid var(--line); transform: rotate(2deg); }
-  .badge.case { background: var(--amber); }
+  .cite { margin-top: 10px; font-size: 12.5px; color: #7c6f57; text-align: right; }
+  .cite::before { content: "🔍 案例落点："; }
 
   footer { text-align: center; color: #6b7280; font-size: 13.5px; margin-top: 30px; line-height: 2; }
   footer a { color: var(--blue); }
-  @media (max-width: 640px) { header.cover h1 { font-size: 24px; } .bubble { max-width: 88%; } }
+  @media (max-width: 640px) { header.cover h1 { font-size: 24px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header class="cover">
-  <h1>Agent 解剖图鉴</h1>
-  <p>把一个 Agent 拆开看——每个器官，都是一块开发知识</p>
-  <div class="formula">
-    🤖 Agent ＝ <b>🧠 大脑</b>（LLM）＋ <b>🙋 手</b>（工具调用）＋ <b>🔄 心脏</b>（Loop）<br>
-    　　　　　＋ <b>🧵 记忆</b>（上下文）＋ <b>🎭 人设</b>（System Prompt）＋ <b>🦺 护栏</b>（安全）＋ <b>🦴 骨架</b>（Harness）
-  </div>
-  <p class="sub" style="font-size:13px;opacity:.6;">配套案例：github.com/huihuiha/agent → llm-unify/ ｜ 深度版见飞书《Agent 开发知识地图》</p>
+  <h1>Agent 开发手册<br>知识点 与 注意事项</h1>
+  <p>9 个主题 · 每个主题＝📘 该懂的知识 ＋ ⚠️ 该避的坑</p>
+  <p style="font-size:13.5px;opacity:.6;">案例：github.com/huihuiha/agent → llm-unify/ ｜ 配套飞书文档同名</p>
 </header>
 
-<!-- ============ 序 ============ -->
-<div class="panel">
-  <h2><span class="organ">📖</span>序：Chatbot 和 Agent 差在哪？</h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-purple">💬</div><div class="name">Chatbot</div></div>
-      <div class="bubble left">你问，我答。<b>我只负责"说"</b>，说完这轮就结束了。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-blue">🤖</div><div class="name">Agent</div></div>
-      <div class="bubble left">我<b>决定做什么、调什么工具、看结果、再决定下一步</b>——直到任务完成我才停。我负责"做"。</div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">区别不在模型，在<b>循环</b>：Chatbot 是一问一答的一条线；Agent 是"思考→行动→观察→再思考"转圈的环。接下来逐个器官拆开讲。</div>
-    </div>
+<!-- ============ 1 ============ -->
+<div class="card">
+  <h2><span class="n">01</span>LLM 调用基础</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>调用本质：<b>消息列表进 → 文本出</b>。三种角色：<code>system</code>（规则）/ <code>user</code>（输入）/ <code>assistant</code>（模型说过的话，多轮必须带上才有记忆）</li>
+      <li><b>temperature</b>：随机性旋钮；<b>token</b>：计费与理解的最小单位；<b>上下文窗口</b>：一次能塞的记忆上限</li>
+      <li>最重要的认知：<b>输出是概率性的</b>——同输入不保证同输出，承诺的格式也不总兑现</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：Agent 的定义性特征是<b>自主多步决策</b>（agentic loop），而不是模型本身。同一个 LLM，接不接循环，就是 Chatbot 和 Agent 的分界。</div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>用户输入永远不要拼进 system</b>——system 是规则层，user 是数据层，混了就是注入漏洞</li>
+      <li>调试期固定 temperature（否则问题无法复现）；记录每次的 <code>usage</code>，成本意识从第一天开始</li>
+      <li>上下文快满时主动裁剪，别等报错；对模型的输出<b>永远保留校验这一步</b></li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify 统一协议 contracts.py（7 字段公共交集）</div>
 </div>
 
-<!-- ============ 1 大脑 ============ -->
-<div class="panel">
-  <span class="badge">器官 1</span>
-  <h2><span class="organ">🧠</span>大脑：LLM 调用的真相 <span class="what">messages in → content out</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">所有 Agent 知识的地基：模型调用的本质是——塞进去一段<b>消息列表</b>，吐出一段<b>文本</b>。三种角色：<code>system</code>（规则）、<code>user</code>（输入）、<code>assistant</code>（模型说过的话）。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-purple">🤖</div><div class="name">大脑</div></div>
-      <div class="bubble left">我是<b>概率</b>器官：同样的输入可能有不同的输出。所以上层永远要有校验和护栏，别裸奔。</div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">三个必懂概念：<b>temperature</b>（输出随机性旋钮）、<b>token</b>（计费与理解的单位）、<b>上下文窗口</b>（一次能塞多少记忆，超了就失忆）。</div>
-    </div>
+<!-- ============ 2 ============ -->
+<div class="card">
+  <h2><span class="n">02</span>统一调用层（多供应商）</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>各家 API 协议<b>互不兼容</b>：system 位置、鉴权头、字段名、流式事件、错误格式全都不同</li>
+      <li>解法：<b>防腐层</b>——定义自己的统一接口（各家的公共交集），每家写一个适配器做翻译</li>
+      <li>判断标准：业务代码里<b>搜不到别人家的字段名</b>（<code>instructions</code>、<code>x-api-key</code>…）</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：messages 三角色；采样参数；token 与上下文窗口；<b>输出是概率性的</b>——这决定了 Agent 处处需要校验。<span style="color:#a0947c">案例：llm-unify 统一了 7 字段调用协议，换大脑=换配置。</span></div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>SDK 自带的重试要显式关掉</b>（如 OpenAI SDK 默认 max_retries=2）——多层重试相乘，流量放大 27 倍的事故就是这么来的</li>
+      <li>换模型前先想好路由与降级：主力模型挂了谁顶上？</li>
+      <li>密钥走环境变量，<b>永远不进代码库</b>（.env 加入 gitignore）</li>
+      <li>留一个"无 Key 演示模式"，评审和测试都省事</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify 三适配器 + ADAPTER_REGISTRY 注册表</div>
 </div>
 
-<!-- ============ 2 嘴 ============ -->
-<div class="panel">
-  <span class="badge">器官 2</span>
-  <h2><span class="organ">🗣️</span>嘴：流式输出 <span class="what">SSE / TTFT / 打字机</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-rose">🗣️</div><div class="name">嘴</div></div>
-      <div class="bubble left">我讲究<b>第一句话什么时候出口</b>——首 token 延迟（TTFT）决定 Agent 手感。等全部想完再说是没人要的体验。</div>
-    </div>
-    <div class="diagram">SSE 事件流：  start → delta("查") → delta("询") → delta("中…") → end(usage)
-                                    ↑ 逐字推送，前端打字机；统计与日志挂在 end 上</div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">对 Agent 特别有意义的一点：流式让<b>执行过程可见</b>——用户看到 Agent"正在查询订单…"，而不是黑箱转圈。</div>
-    </div>
+<!-- ============ 3 ============ -->
+<div class="card">
+  <h2><span class="n">03</span>流式输出</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>体验关键指标是<b>首 token 延迟（TTFT）</b>，不是总延迟——第一个字出现的时刻决定"卡不卡"</li>
+      <li>技术：SSE（POST 也能流式）；把各家流式事件<b>统一成自己的事件协议</b>（start/delta/end/error），前端一套代码通吃</li>
+      <li>Agent 特有价值：流式让<b>执行过程可见</b>（"正在查询订单…"），不再黑箱转圈</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：SSE 协议（POST 也能流式）；统一类型化事件；<b>不可撤回</b>——已播出的内容收不回，流式重试只在首帧之前。<span style="color:#a0947c">案例：llm-unify 三家上游的流统一成 5 种事件。</span></div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>不可撤回</b>：已推送的内容收不回——<b>重试/降级只在首个增量之前有效</b>，之后只能报错终止</li>
+      <li>断流要给用户明确反馈（错误事件），别静默挂起让人干等</li>
+      <li>调试陷阱：浏览器 DevTools 对 POST-SSE 的 EventStream 面板<b>显示空白是已知问题</b>，不代表没数据</li>
+      <li>统计信息（usage/延迟）挂在结束事件上带回，别在前端猜</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify service.py 的 emitted 标志与五种类型化事件</div>
 </div>
 
-<!-- ============ 3 手 ============ -->
-<div class="panel">
-  <span class="badge">器官 3</span>
-  <h2><span class="organ">🙋</span>手：结构化输出 与 工具调用 <span class="what">JSON Schema → tool_calls</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">手的进化分两步。<b>第一步：结构化输出</b>——让模型说"机器话"：按 JSON Schema 交卷，字段、类型白纸黑字。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-purple">🤖</div><div class="name">大脑</div></div>
-      <div class="bubble left">我交卷不保证全对哦～<code>{"name": 123}</code> 这种错我会犯。</div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">所以铁律：<b>本地校验 + 错题回喂</b>（修复循环）——校验不过，把错在哪喂回去让它改。这是 Agent"自我修正"的最小形态。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-teal">🛠️</div><div class="name">工具</div></div>
-      <div class="bubble left"><b>第二步才是真正的手：tool_calls。</b>请求里声明工具清单（名字+参数 Schema），模型不回文本，回<b>"帮我调 get_weather(城市=北京)"</b>——你执行，结果喂回，它继续。</div>
-    </div>
-    <div class="diagram">结构化输出:  user → 模型 → {"action":"refund"}        （交付数据）
-工具调用:    user → 模型 → tool_calls:[查订单] → 你执行 → 结果喂回 → 模型 → … （驱动行动）</div>
+<!-- ============ 4 ============ -->
+<div class="card">
+  <h2><span class="n">04</span>结构化输出</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>用 <b>JSON Schema</b> 定义输出契约（字段/类型/必填），让模型输出机器可解析的数据</li>
+      <li>模型能力分三档：<b>原生 schema</b>（Responses 协议）→ <b>json_mode</b>（保语法不保字段）→ <b>prompt 注入</b>（全靠说服）</li>
+      <li><b>修复循环</b>：校验失败把错题详情喂回去让它自纠错——这是 Agent"自我修正"的最小形态</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：结构化输出是"给数据"，工具调用是"下指令"——后者是 Agent 的标志性能力；两者共享同一个底层：Schema 约束 + 本地校验 + 修复循环。<span style="color:#a0947c">案例：llm-unify 完整实现了三档结构化输出与修复循环，是接工具前的必修地基。</span></div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li>铁律：<b>永远本地校验</b>——上游说"保证 JSON"不算数；交付给下游的必须是"验过的数据"或"明确的错误"</li>
+      <li>Schema 写严：<code>additionalProperties: false</code> ＋ <code>required</code> 列全，模型最爱"发挥"多余字段</li>
+      <li>容错解析要剥噪声（代码围栏、前后解释文字），但<b>修复循环必须限次数</b>——无限重试就是烧钱循环</li>
+      <li>校验只管格式不管语义：字段值里照样能藏敏感信息/注入内容，重要场景加内容扫描</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify structured.py 三档降级 + 修复循环</div>
 </div>
 
-<!-- ============ 4 心脏 ============ -->
-<div class="panel">
-  <span class="badge">器官 4</span>
-  <h2><span class="organ">🔄</span>心脏：Agent Loop <span class="what">Agent 的生命体征</span></h2>
-  <div class="scene">
-    <div class="diagram">while True:
-    响应 = 大脑(messages, tools)
-    if 响应.tool_calls:              # 模型喊"用工具"
-        结果 = 执行(响应.tool_calls)   # 你来动手
+<!-- ============ 5 ============ -->
+<div class="card">
+  <h2><span class="n">05</span>工具调用（tool_calls）</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>Agent 的标志性能力：请求里声明<b>工具清单</b>（名字＋参数 Schema），模型返回"调用哪个工具＋什么参数"而不是文本</li>
+      <li>流程：模型下指令 → 你执行 → 结果以 <code>tool</code> 角色喂回 → 模型继续决策</li>
+      <li>与结构化输出的关系：<b>前者交付数据，后者下达指令</b>；共享同一套底层（Schema＋校验＋修复）</li>
+    </ul>
+  </div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>工具描述是给模型看的文档</b>——写不清楚模型就不会用或滥用，值得像写 API 文档一样认真</li>
+      <li>工具实现要<b>幂等、有超时</b>：模型可能重复调用同一工具，卡死的工具会卡死整个循环</li>
+      <li><b>权限最小化＋危险操作加确认</b>：注入的危害上限＝Agent 手里的权限上限</li>
+      <li>警惕<b>间接注入</b>：工具返回的内容（网页、文件）同样不可信，别直接拼进上下文</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify 的结构化输出正是接工具前的必修地基</div>
+</div>
+
+<!-- ============ 6 ============ -->
+<div class="card">
+  <h2><span class="n">06</span>Agent Loop（核心循环）</h2>
+  <div class="diagram">while 轮数 < 上限:
+    响应 = LLM(messages, tools)
+    if 响应.tool_calls:
+        结果 = 执行(工具)
         messages += [assistant(tool_calls), tool(结果)]   # 观察喂回
-        continue                     # 再思考
-    else:
-        return 响应.content           # 不再喊工具 = 任务完成，停机</div>
-    <div class="row">
-      <div class="actor"><div class="face c-red">🔄</div><div class="name">心脏</div></div>
-      <div class="bubble left">我每跳一轮 = 一次"思考→行动→观察"。<b>停止条件就藏在响应里</b>：模型不再要工具、finish_reason 变成 stop——它自己知道什么时候收工。</div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">注意循环里被喂回去的不只是文本——<b>工具结果也是上下文</b>。这也是为什么记忆器官那么重要 ↓</div>
-    </div>
+        continue
+    return 响应.content      # 模型不再要工具 = 它认为完成了</div>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>Agent 的定义性结构：<b>思考 → 行动 → 观察 → 再思考</b>，直到模型认为任务完成</li>
+      <li><b>终止权在模型</b>：它通过"是否继续要工具"表达任务是否完成，你的代码只是执行它的决定</li>
+      <li>每一轮都是一次完整的 LLM 调用：计费、失败、观测都按<b>轮数放大</b></li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：Agent Loop 是 Agent 的定义性结构；<b>终止权在模型</b>（是否继续要工具）；每一轮都是一次完整的 LLM 调用——所以计费、限流、观测都要按"多轮"设计。<span style="color:#a0947c">案例：llm-unify 是这个循环的"供水系统"，保证每一轮调用都可靠。</span></div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li><b>必须设最大轮数上限</b>——模型陷入"再查一下"的死循环时，烧的是你的钱</li>
+      <li>别只信 finish_reason：模型说"完成"不代表真的完成，关键任务要有<b>结果校验</b>兜底</li>
+      <li>每轮记录观测（request_id 串联整条轨迹），出问题能回放"它当时看到了什么"</li>
+      <li>工具结果喂回时注意上下文膨胀——长输出先摘要再入列</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify 是循环的"供水系统"：保证每轮调用可靠</div>
 </div>
 
-<!-- ============ 5 记忆 ============ -->
-<div class="panel">
-  <span class="badge">器官 5</span>
-  <h2><span class="organ">🧵</span>记忆：上下文窗口经济学 <span class="what">短期 / 长期</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-amber">🧵</div><div class="name">记忆</div></div>
-      <div class="bubble left">我的<b>短期记忆就是 messages 列表</b>——每轮对话、每次工具结果都追加进来。代价：窗口有限（token 计费），塞满了就失忆。</div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">所以记忆管理是 Agent 的长期课题：<b>裁剪</b>（保留最近 N 轮）、<b>摘要</b>（旧对话压缩成一段）、<b>外置</b>（存向量库，用时检索——这就是 RAG，后续课程的主角）。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-amber">🧵</div><div class="name">记忆</div></div>
-      <div class="bubble left">一句话：<b>上下文窗口是 RAM，向量库是硬盘。</b>RAM 贵而快，硬盘大而慢，Agent 要学会分层用。</div>
-    </div>
+<!-- ============ 7 ============ -->
+<div class="card">
+  <h2><span class="n">07</span>Prompt 工程</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>System Prompt 是 Agent 的<b>行为契约</b>，五要素：<b>角色目标 / 行为约束 / 输出契约 / 示例(few-shot) / 异常处理</b></li>
+      <li>few-shot 用例子立标杆，远胜用形容词描述（"像示例那样"＞"要简洁专业"）</li>
+      <li><b>Prompt 即代码</b>：版本号、只增不改、可 diff、可回滚</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：短期记忆=消息累积（有窗口上限与成本）；长期记忆=RAG 检索增强；上下文超限是 Agent 最常见的运行时故障之一（要能识别并处理）。<span style="color:#a0947c">案例：llm-unify 把"上下文超长"识别为独立异常类型并换路由兜底。</span></div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li>改一个词行为就漂移——<b>没有版本管理的 prompt 调优全是玄学</b>，出事连"昨晚改了啥"都不知道</li>
+      <li>用户提交的模板要<b>沙箱渲染</b>（SSTI 攻击能逃逸到代码执行）；变量缺失<b>立即报错</b>，半成品 prompt 比报错危险</li>
+      <li>改 prompt 要有<b>评测基准</b>对照——不然"感觉变好了"可能是错觉</li>
+      <li>约束写在 system（高特权），不要写在容易被覆盖的位置</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify prompts.py：版本不可变＋Jinja2 沙箱＋StrictUndefined</div>
 </div>
 
-<!-- ============ 6 人设 ============ -->
-<div class="panel">
-  <span class="badge">器官 6</span>
-  <h2><span class="organ">🎭</span>人设：System Prompt 是 Agent 的宪法 <span class="what">Prompt 工程</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-purple">🎭</div><div class="name">人设</div></div>
-      <div class="bubble left">我是 Agent 的<b>行为契约</b>：角色是谁、目标是什么、边界在哪、输出什么格式、遇到异常怎么办——全写在我这里。</div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">写好我的要素：<b>角色与目标</b>、<b>行为约束</b>（能做/禁做）、<b>输出契约</b>（格式）、<b>示例</b>（few-shot 立标杆）、<b>异常处理</b>（不知道怎么办时怎么办）。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-purple">🎭</div><div class="name">人设</div></div>
-      <div class="bubble left">我很敏感——<b>改一个词，行为就漂移</b>。所以给我配版本管理（只增不改、可 diff、可回滚），不然调优全靠玄学。</div>
-    </div>
+<!-- ============ 8 ============ -->
+<div class="card">
+  <h2><span class="n">08</span>安全（注入与防护）</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li><b>Prompt 注入是 OWASP LLM Top 1</b>：指令与数据共用自然语言，<b>没有语法边界</b>（SQL 有参数化，prompt 没有银弹）</li>
+      <li>现实解法是<b>纵深防御</b>（层 layered 降险）：输入包裹标记＋输出泄漏扫描＋角色分层＋权限最小化</li>
+      <li>第一性原理：<b>注入的危害上限 ＝ Agent 手中的权限上限</b></li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：System Prompt 五要素；prompt 是行为契约不是文案；<b>Prompt 即代码</b>（版本/不可变/回滚）；渲染用户模板要沙箱。<span style="color:#a0947c">案例：llm-unify 的 Prompt 版本库 + Jinja2 沙箱 + StrictUndefined。</span></div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li>不可信数据用显式标签包裹（如 <code>&lt;untrusted_data&gt;</code>）＋ system 里声明处置规则</li>
+      <li>输出侧扫描系统提示词泄漏（被劫持的典型痕迹），命中即拒绝交付</li>
+      <li><b>接工具之前先想最坏情况</b>：会说话的模型被注入最多社死，会用工具的模型被注入就是事故</li>
+      <li>安全策略集中在网关层做——业务方各自为战必有遗漏</li>
+    </ul>
+  </div>
+  <div class="cite">llm-unify security.py 两道可配置防线</div>
 </div>
 
-<!-- ============ 7 护栏 ============ -->
-<div class="panel">
-  <span class="badge">器官 7</span>
-  <h2><span class="organ">🦺</span>护栏：概率世界的安全带 <span class="what">注入 / 权限 / 校验</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-red">🦺</div><div class="name">护栏</div></div>
-      <div class="bubble left">大脑是概率的、输入是不可信的、输出是不保证的——三重不确定性，全靠我兜。<b>没有护栏的 Agent 不能上线。</b></div>
-    </div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">三层护栏：<b>输入</b>（注入防护——指令和数据都是自然语言，没有语法边界，只能纵深防御：包裹、声明、最小权限）；<b>过程</b>（工具白名单、危险操作确认）；<b>输出</b>（Schema 校验、泄漏扫描）。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-red">🦺</div><div class="name">护栏</div></div>
-      <div class="bubble left">记住那条安全第一性原理：<b>注入的危害上限 = Agent 手里的权限上限。</b>给工具授权之前，先想最坏情况。</div>
-    </div>
+<!-- ============ 9 ============ -->
+<div class="card">
+  <h2><span class="n">09</span>工程骨架（稳定性与可观测）</h2>
+  <div class="sec know">
+    <div class="t">📘 知识点</div>
+    <ul>
+      <li>稳定性三件套分工：<b>限流管常态</b>（令牌桶：允许突发、稳态收敛）、<b>重试管瞬时故障</b>（指数退避＋抖动防惊群）、<b>熔断管持续故障</b>（连败即跳过，快速失败）</li>
+      <li>重试纪律：只重试<b>瞬时错误</b>（429/超时/5xx）；确定性错误（401/超窗）一次都别试，但<b>可以换路由</b></li>
+      <li>可观测：每个请求一个 <b>request_id 贯穿全程</b>；token/延迟/重试/降级/错误全部落库</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：Prompt 注入是 OWASP LLM Top 1（无根治，纵深防御）；输出校验是最后防线；权限最小化定义攻击边界。<span style="color:#a0947c">案例：llm-unify 落地输入包裹 + 输出泄漏扫描两道防线。</span></div>
-</div>
-
-<!-- ============ 8 骨架 ============ -->
-<div class="panel">
-  <span class="badge case">器官 8 · 案例点题</span>
-  <h2><span class="organ">🦴</span>骨架：Harness，把器官组装成生命 <span class="what">工程层</span></h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-teal">🦴</div><div class="name">骨架</div></div>
-      <div class="bubble left">前面七个器官再好，没有我它们只是一堆零件。我叫 <b>Harness（脚手架）</b>：统一调用、多模型路由、重试熔断限流、可观测——让每次心跳（每轮 Loop）都可靠。</div>
-    </div>
-    <div class="diagram">用户 ⇄ [骨架 Harness] ⇄ 大脑
-              ├─ 统一调用协议（换模型=改配置）
-              ├─ 路由与降级（主备/权重/熔断）
-              ├─ 限流与重试（保上游也保钱包）
-              ├─ 可观测（request_id 贯穿每轮心跳）
-              └─ 稳定性：所有器官的共用地基</div>
-    <div class="row">
-      <div class="actor small"><div class="face c-ink">🧑‍🏫</div><div class="name">讲师</div></div>
-      <div class="bubble left">llm-unify 这个案例项目，就是一块<b>完整的骨架</b>——2800 行、79 个测试、CLI/HTTP/Web 三种形态。器官会随课程一个个长大，骨架从第一周就要立起来。</div>
-    </div>
+  <div class="sec care">
+    <div class="t">⚠️ 注意事项</div>
+    <ul>
+      <li>429 要尊重 <code>Retry-After</code>，别按自己的节奏硬撞</li>
+      <li>抖动别省——所有客户端同一毫秒集体重试会把刚恢复的上游再次打挂（惊群）</li>
+      <li><b>失败请求也要落库</b>——错误率统计的分母不能缺</li>
+      <li>熔断/限流是进程内状态：多副本部署要换集中式实现（如 Redis）</li>
+    </ul>
   </div>
-  <div class="know"><span class="k">本页知识</span>：Harness = Agent 的工程地基；Agent 的可靠性不是模型给的，是骨架给的；每个器官的知识最终都要落回骨架的代码里。</div>
+  <div class="cite">llm-unify 整个骨架：rate_limit / retry / router / observability</div>
 </div>
 
 <footer>
-  🧭 学习路线：骨架（本周）→ 手与心脏（tool_calls / Agent Loop）→ 记忆（RAG）→ 评测（evals）<br>
-  📦 完整案例：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无需 Key 可跑）<br>
-  🎬 本图鉴：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a> ｜ 📄 深度版：飞书《Agent 开发知识地图》
+  📦 案例代码：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无 Key 可跑）<br>
+  📄 深度版：飞书《Agent 开发知识点与注意事项》｜ 🎬 本手册：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a>
 </footer>
 </div>
 </body>
