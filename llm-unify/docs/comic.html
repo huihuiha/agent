@@ -118,8 +118,8 @@
     <div class="t">📘 知识点</div>
     <ul>
       <li><b>短期记忆 = 消息列表的累积</b>：对话历史、工具结果全都追加进上下文；上限是窗口，计量是 token——记忆是有成本的</li>
-      <li>三个管理手段：<b>裁剪</b>（只留最近 N 轮）、<b>摘要</b>（旧历史压缩成梗概保留）、<b>外置</b>（存向量库、用时检索——即 RAG，检索增强生成）</li>
-      <li>一个比喻：<b>上下文窗口是内存，向量库是硬盘</b>——内存贵而快容量小，硬盘大而便宜，聪明的 Agent 分层使用</li>
+      <li>多轮对话与 Loop 都靠它：每轮的对话历史、工具结果持续追加——这也是 Agent 的"工作记忆"（见 loop.py 的消息增长）</li>
+      <li>窗口是有底的：塞满即"失忆"——超窗输入会被识别为独立异常（ContextLengthExceededError）并自动换更大窗口的路由兜底</li>
     </ul>
   </div>
   <div class="sec care">
@@ -331,11 +331,11 @@
       <li>验收一个网关的三种方式：<b>口头讲清调用主链</b>、<b>代码补骨架抓错误实现</b>、<b>迁移一个新 Provider</b> 验证扩展性</li>
     </ul>
   </div>
-  <div class="cite case">llm-unify 整个骨架：rate_limit / retry / router / observability（Retry-After 采用列为已知差距）</div>
+  <div class="cite case">llm-unify 整个骨架：rate_limit / retry / router / observability（每个行为均有测试钉死）</div>
 </div>
 
 <footer>
-  🧭 学习路线六阶段：模型调用 ✅ → Tool Runtime ✅ → Loop 与 Harness ✅ → Context / Memory / RAG → Multi-Agent 与 Eval → Production Ready<br>
+  🧭 本次分享覆盖：模型调用 → Tool Runtime → Loop 与 Harness（后续课程：RAG / Multi-Agent / Eval / Production）<br>
   📦 案例：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/（79 测试，无 Key 可跑）<br>
   🎬 本手册：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a> ｜ 📄 深度版见飞书文档
 </footer>
