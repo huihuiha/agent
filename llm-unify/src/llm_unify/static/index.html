@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>llm-unify 控制台</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --border: #e2e5ea; --text: #1f2430;
+    --muted: #6b7280; --primary: #2563eb; --primary-weak: #dbeafe;
+    --ok: #16a34a; --err: #dc2626; --warn: #d97706; --code-bg: #0f172a; --code-fg: #e2e8f0;
+    --radius: 10px; --mono: Consolas, "JetBrains Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+           background: var(--panel); border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 17px; margin: 0; }
+  header .logo { width: 28px; height: 28px; border-radius: 8px; background: var(--primary);
+                 color: #fff; display: flex; align-items: center; justify-content: center;
+                 font-weight: 700; font-size: 13px; }
+  .spacer { flex: 1; }
+  .pill { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); }
+  .pill.ok { color: var(--ok); border-color: #bbf7d0; background: #f0fdf4; }
+  .pill.bad { color: var(--err); border-color: #fecaca; background: #fef2f2; }
+  input[type="text"], input[type="password"], input[type="number"], select, textarea {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--panel); color: var(--text); font: inherit; }
+  textarea { font-family: var(--mono); font-size: 13px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-weak); border-color: var(--primary); }
+  button { padding: 7px 16px; border: 1px solid var(--primary); border-radius: 8px;
+           background: var(--primary); color: #fff; cursor: pointer; font: inherit; }
+  button:hover { filter: brightness(1.08); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.ghost { background: var(--panel); color: var(--text); border-color: var(--border); }
+  nav { display: flex; gap: 4px; padding: 10px 20px 0; background: var(--panel);
+        border-bottom: 1px solid var(--border); }
+  nav button { border: none; background: none; color: var(--muted); padding: 8px 14px;
+               border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent; }
+  nav button.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+  main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  section.tab { display: none; }
+  section.tab.active { display: block; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+          padding: 16px; margin-bottom: 16px; }
+  .card h3 { margin: 0 0 12px; font-size: 14px; color: var(--muted); font-weight: 600;
+             text-transform: uppercase; letter-spacing: .04em; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .chat { display: flex; flex-direction: column; gap: 12px; height: 52vh; overflow-y: auto;
+          padding: 4px; }
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: 12px; white-space: pre-wrap;
+         word-break: break-word; }
+  .msg.user { align-self: flex-end; background: var(--primary); color: #fff; }
+  .msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); }
+  .msg.error { align-self: stretch; background: #fef2f2; border: 1px solid #fecaca;
+               color: var(--err); font-size: 13px; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
+  .composer { display: flex; gap: 8px; margin-top: 12px; }
+  .composer textarea { flex: 1; min-height: 64px; }
+  pre.code { background: var(--code-bg); color: var(--code-fg); padding: 12px; border-radius: 8px;
+             overflow: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  td.num { font-family: var(--mono); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+         padding: 12px 16px; }
+  .kpi .v { font-size: 22px; font-weight: 700; font-family: var(--mono); }
+  .kpi .k { font-size: 12px; color: var(--muted); }
+  .badge { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px;
+           border: 1px solid var(--border); margin-left: 6px; color: var(--muted); }
+  .badge.proto { color: var(--primary); border-color: var(--primary-weak); background: #eff6ff; }
+  .badge.open { color: var(--err); border-color: #fecaca; background: #fef2f2; }
+  .diff { font-family: var(--mono); font-size: 12.5px; white-space: pre; overflow-x: auto;
+          background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; }
+  .diff .add { background: #f0fdf4; color: #15803d; display: block; padding: 0 12px; }
+  .diff .del { background: #fef2f2; color: #b91c1c; display: block; padding: 0 12px; }
+  .diff .ctx { display: block; padding: 0 12px; color: var(--muted); }
+  .diff .hdr { color: var(--primary); font-weight: 700; }
+  .kv { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 13px; }
+  .kv .k { color: var(--muted); }
+  .loading { color: var(--muted); font-size: 13px; }
+  .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .toolbar h3 { margin: 0; flex: 1; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .status-dot.ok { background: var(--ok); } .status-dot.bad { background: var(--err); }
+  .cursor-blink { display: inline-block; width: 7px; height: 15px; background: var(--muted);
+                  vertical-align: text-bottom; animation: blink 1s step-start infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">LU</div>
+  <h1>llm-unify 控制台</h1>
+  <span class="pill" id="conn"><span class="status-dot bad"></span>未连接</span>
+  <div class="spacer"></div>
+  <input type="password" id="apiKey" placeholder="API Key（服务启用鉴权时填写）"
+         style="width: 260px" onchange="saveKey()">
+</header>
+
+<nav id="tabs">
+  <button data-tab="chat" class="active">💬 对话（流式）</button>
+  <button data-tab="structured">🧬 结构化输出</button>
+  <button data-tab="prompts">📜 Prompt 版本</button>
+  <button data-tab="stats">📊 调用统计</button>
+  <button data-tab="routes">🗺 模型路由</button>
+</nav>
+
+<main>
+  <!-- ======================= 对话 ======================= -->
+  <section class="tab active" id="tab-chat">
+    <div class="row">
+      <div style="flex: 0 0 280px">
+        <div class="card">
+          <h3>请求参数</h3>
+          <label>模型别名</label>
+          <select id="chatModel"></select>
+          <label>temperature</label>
+          <input type="number" id="chatTemp" step="0.1" min="0" max="2" placeholder="默认">
+          <label>top_p</label>
+          <input type="number" id="chatTopP" step="0.05" min="0" max="1" placeholder="默认">
+          <label>max_tokens</label>
+          <input type="number" id="chatMax" step="1" min="1" placeholder="默认">
+          <label><input type="checkbox" id="chatStream" checked style="width:auto"> 流式输出（SSE 类型化事件）</label>
+          <button class="ghost" style="width:100%;margin-top:12px" onclick="clearChat()">清空对话</button>
+        </div>
+        <div class="card">
+          <h3>Prompt 模板（可选）</h3>
+          <label>模板</label>
+          <select id="chatPrompt" onchange="onChatPromptChange()"><option value="">（不使用）</option></select>
+          <label>版本</label>
+          <select id="chatPromptVersion"><option value="">active</option></select>
+          <label>模板变量（每行 KEY=VALUE）</label>
+          <textarea id="chatVars" rows="3" placeholder="target_lang=日文&#10;style=口语"></textarea>
+        </div>
+      </div>
+      <div style="flex: 1">
+        <div class="card">
+          <h3>对话</h3>
+          <div class="chat" id="chatLog">
+            <div class="hint">选择模型后开始对话；多轮上下文自动携带。流式模式下逐字打印，事件协议 start / delta / end / error。</div>
+          </div>
+          <div class="composer">
+            <textarea id="chatInput" placeholder="输入消息，Ctrl+Enter 发送"></textarea>
+            <button id="chatSend" onclick="sendChat()">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 结构化输出 ======================= -->
+  <section class="tab" id="tab-structured">
+    <div class="row">
+      <div style="flex: 1">
+        <div class="card">
+          <h3>请求</h3>
+          <div class="row">
+            <div>
+              <label>模型别名</label>
+              <select id="stModel"></select>
+            </div>
+            <div>
+              <label>输出形式</label>
+              <select id="stMode">
+                <option value="json">JSON Schema 结构化</option>
+                <option value="stream">流式 + 结构化（缓冲后校验）</option>
+              </select>
+            </div>
+          </div>
+          <label>用户输入</label>
+          <textarea id="stInput" rows="2">姓名：张三，年龄：28，技能：Python、K8s</textarea>
+          <label>JSON Schema</label>
+          <textarea id="stSchema" rows="12">{
+  "type": "object",
+  "properties": {
+    "name":   { "type": "string" },
+    "age":    { "type": "integer", "minimum": 0 },
+    "skills": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  },
+  "required": ["name", "age", "skills"],
+  "additionalProperties": false
+}</textarea>
+          <button style="margin-top:12px" onclick="sendStructured()">校验并发送</button>
+          <span class="hint" id="stSchemaMsg"></span>
+        </div>
+      </div>
+      <div style="flex: 1">
+        <div class="card">
+          <h3>结果（本地 JSON Schema 校验后）</h3>
+          <div id="stResult"><div class="hint">等待调用。适配器按能力自动降级：native_schema / json_mode / prompt_only，校验失败自动进入修复循环。</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= Prompt 版本 ======================= -->
+  <section class="tab" id="tab-prompts">
+    <div class="row">
+      <div style="flex: 0 0 320px">
+        <div class="card">
+          <h3>模板列表</h3>
+          <div id="promptList"><div class="loading">加载中…</div></div>
+        </div>
+      </div>
+      <div style="flex: 1">
+        <div class="card">
+          <div class="toolbar">
+            <h3>模板详情</h3>
+            <select id="pvVersion" style="width:130px" onchange="showPromptDetail()"></select>
+          </div>
+          <div id="promptDetail"><div class="hint">从左侧选择模板。</div></div>
+        </div>
+        <div class="card">
+          <div class="toolbar"><h3>版本对比</h3>
+            <select id="diffLeft" style="width:80px"></select>
+            <span class="hint">vs</span>
+            <select id="diffRight" style="width:80px"></select>
+            <button class="ghost" onclick="doDiff()">对比</button>
+          </div>
+          <div id="promptDiff"><div class="hint">选择两个版本查看差异。</div></div>
+        </div>
+        <div class="card">
+          <h3>渲染预览</h3>
+          <label>模板变量（每行 KEY=VALUE）</label>
+          <textarea id="renderVars" rows="3" placeholder="target_lang=法文&#10;style=正式"></textarea>
+          <button class="ghost" style="margin-top:10px" onclick="doRender()">渲染</button>
+          <div id="renderOut" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 统计 ======================= -->
+  <section class="tab" id="tab-stats">
+    <div class="card">
+      <div class="toolbar"><h3>总览</h3><button class="ghost" onclick="loadStats()">刷新</button></div>
+      <div class="kpis" id="statKpis"><div class="loading">加载中…</div></div>
+    </div>
+    <div class="row">
+      <div class="card" style="flex:1"><h3>按模型</h3><div id="statByModel" class="loading">加载中…</div></div>
+      <div class="card" style="flex:1"><h3>按 Provider</h3><div id="statByProvider" class="loading">加载中…</div></div>
+    </div>
+    <div class="card">
+      <h3>最近调用（request_id 对账）</h3>
+      <div style="overflow-x:auto"><table id="statRecent"></table></div>
+    </div>
+  </section>
+
+  <!-- ======================= 路由 ======================= -->
+  <section class="tab" id="tab-routes">
+    <div class="card"><h3>模型路由表</h3><div id="routeList"><div class="loading">加载中…</div></div></div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const state = { models: {}, prompts: [], messages: [], busy: false, currentPrompt: null };
+
+/* ---------------- 基础请求 ---------------- */
+function headers() {
+  const h = { "Content-Type": "application/json" };
+  const key = $("apiKey").value.trim();
+  if (key) h["Authorization"] = "Bearer " + key;
+  return h;
+}
+async function api(path, opts = {}) {
+  const resp = await fetch(path, { headers: headers(), ...opts });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error ? `${data.error.type}: ${data.error.message}` : `HTTP ${resp.status}`);
+  return data;
+}
+function saveKey() { localStorage.setItem("llm-unify-key", $("apiKey").value.trim()); }
+
+/* ---------------- 初始化 ---------------- */
+async function init() {
+  $("apiKey").value = localStorage.getItem("llm-unify-key") || "";
+  try {
+    await api("/healthz");
+    $("conn").innerHTML = '<span class="status-dot ok"></span>已连接';
+    $("conn").className = "pill ok";
+  } catch { $("conn").innerHTML = '<span class="status-dot bad"></span>服务不可用'; }
+  try {
+    const data = await api("/v1/models");
+    state.models = data.data;
+    const names = Object.keys(state.models);
+    for (const sel of ["chatModel", "stModel"]) {
+      $(sel).innerHTML = names.map((n) => `<option>${n}</option>`).join("");
+    }
+  } catch (e) { toast("models 加载失败：" + e.message); }
+  try {
+    const data = await api("/v1/prompts");
+    state.prompts = data.data;
+    $("chatPrompt").innerHTML =
+      '<option value="">（不使用）</option>' +
+      state.prompts.map((p) => `<option value="${p.id}">${p.id}（${p.name}）</option>`).join("");
+  } catch { /* 无模板 */ }
+  loadStats();
+}
+
+document.querySelectorAll("#tabs button").forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll("#tabs button").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll("section.tab").forEach((s) => s.classList.remove("active"));
+    btn.classList.add("active");
+    $("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "stats") loadStats();
+    if (btn.dataset.tab === "routes") loadRoutes();
+  };
+});
+
+/* ---------------- 对话 ---------------- */
+function onChatPromptChange() {
+  const id = $("chatPrompt").value;
+  const prompt = state.prompts.find((p) => p.id === id);
+  $("chatPromptVersion").innerHTML =
+    '<option value="">active</option>' +
+    (prompt ? prompt.versions.map((v) => `<option value="${v}">v${v}</option>`).join("") : "");
+}
+function parseVars(text) {
+  const vars = {};
+  for (const line of text.split("\n")) {
+    const idx = line.indexOf("=");
+    if (idx > 0) vars[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+  }
+  return vars;
+}
+function clearChat() {
+  state.messages = [];
+  $("chatLog").innerHTML = '<div class="hint">对话已清空。</div>';
+}
+function addMsg(cls, text) {
+  const log = $("chatLog");
+  if (log.querySelector(".hint")) log.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+async function sendChat() {
+  if (state.busy) return;
+  const input = $("chatInput").value.trim();
+  if (!input) return;
+  state.busy = true; $("chatSend").disabled = true; $("chatInput").value = "";
+  addMsg("user", input);
+  state.messages.push({ role: "user", content: input });
+
+  const payload = {
+    model: $("chatModel").value,
+    messages: state.messages,
+    stream: $("chatStream").checked,
+  };
+  for (const [key, id] of [["temperature", "chatTemp"], ["top_p", "chatTopP"], ["max_tokens", "chatMax"]]) {
+    const v = $(id).value;
+    if (v !== "") payload[key] = Number(v);
+  }
+  if ($("chatPrompt").value) {
+    payload.prompt_ref = {
+      id: $("chatPrompt").value,
+      variables: parseVars($("chatVars").value),
+    };
+    const ver = $("chatPromptVersion").value;
+    if (ver) payload.prompt_ref.version = Number(ver);
+  }
+
+  const bubble = addMsg("assistant", "");
+  const cursor = document.createElement("span");
+  cursor.className = "cursor-blink";
+  bubble.appendChild(cursor);
+  let full = "";
+  try {
+    if (payload.stream) {
+      await readSSE("/v1/generate", payload, (ev) => {
+        if (ev.type === "delta") { full += ev.text; bubble.textContent = full; bubble.appendChild(cursor); scroll(); }
+        else if (ev.type === "end") { appendMeta(bubble, ev); }
+        else if (ev.type === "error") { throw new Error(`${ev.error}: ${ev.message}`); }
+      });
+    } else {
+      const resp = await api("/v1/generate", { method: "POST", body: JSON.stringify(payload) });
+      full = resp.text || "";
+      bubble.textContent = full;
+      appendMeta(bubble, {
+        request_id: resp.request_id, provider: resp.provider,
+        usage: resp.usage, metrics: resp.metrics, prompt: resp.prompt,
+      });
+    }
+    state.messages.push({ role: "assistant", content: full });
+  } catch (e) {
+    bubble.remove();
+    addMsg("error", "调用失败：" + e.message);
+  } finally {
+    cursor.remove();
+    if (bubble.textContent === "") bubble.remove();
+    state.busy = false; $("chatSend").disabled = false; $("chatInput").focus();
+  }
+  function scroll() { const log = $("chatLog"); log.scrollTop = log.scrollHeight; }
+}
+function appendMeta(bubble, ev) {
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  const parts = [];
+  if (ev.request_id) parts.push(ev.request_id);
+  if (ev.provider) parts.push(ev.provider);
+  if (ev.usage) parts.push(`tokens ${ev.usage.input_tokens}/${ev.usage.output_tokens}`);
+  if (ev.metrics) parts.push(`${Math.round(ev.metrics.latency_ms)}ms` +
+    (ev.metrics.first_token_ms != null ? ` / 首token ${Math.round(ev.metrics.first_token_ms)}ms` : ""));
+  if (ev.metrics && ev.metrics.retries) parts.push(`重试 ${ev.metrics.retries}`);
+  if (ev.metrics && ev.metrics.fallbacks) parts.push(`降级 ${ev.metrics.fallbacks}`);
+  if (ev.prompt && ev.prompt.id) parts.push(`prompt ${ev.prompt.id}@v${ev.prompt.version}`);
+  meta.textContent = parts.join(" · ");
+  bubble.appendChild(meta);
+}
+$("chatInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) sendChat();
+});
+
+/* ---------------- SSE 读取 ---------------- */
+async function readSSE(path, payload, onEvent) {
+  const resp = await fetch(path, { method: "POST", headers: headers(), body: JSON.stringify(payload) });
+  if (!resp.ok) {
+    const data = await resp.json().catch(() => ({}));
+    throw new Error(data.error ? `${data.error.type}: ${data.error.message}` : `HTTP ${resp.status}`);
+  }
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buffer.indexOf("\n\n")) !== -1) {
+      const chunk = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 2);
+      const line = chunk.split("\n").find((l) => l.startsWith("data: "));
+      if (!line) continue;
+      const text = line.slice(6);
+      if (text === "[DONE]") return;
+      onEvent(JSON.parse(text));
+    }
+  }
+}
+
+/* ---------------- 结构化输出 ---------------- */
+async function sendStructured() {
+  let schema;
+  try {
+    schema = JSON.parse($("stSchema").value);
+    $("stSchemaMsg").textContent = "✓ Schema 语法合法";
+    $("stSchemaMsg").style.color = "var(--ok)";
+  } catch (e) {
+    $("stSchemaMsg").textContent = "✗ Schema JSON 解析失败：" + e.message;
+    $("stSchemaMsg").style.color = "var(--err)";
+    return;
+  }
+  const payload = {
+    model: $("stModel").value,
+    messages: [{ role: "user", content: $("stInput").value }],
+    response_format: { type: "json_schema", json_schema: { name: "result", strict: true, schema } },
+  };
+  $("stResult").innerHTML = '<div class="loading">调用中…</div>';
+  try {
+    if ($("stMode").value === "stream") {
+      let acc = "", out = [];
+      await readSSE("/v1/generate", payload, (ev) => {
+        if (ev.type === "delta") acc += ev.text;
+        if (ev.type === "structured") out.push(ev.data);
+        if (ev.type === "error") throw new Error(`${ev.error}: ${ev.message}`);
+        if (ev.type === "end") out.push(ev);
+      });
+      renderStructured(out[0], acc, out[1]);
+    } else {
+      const resp = await api("/v1/generate", { method: "POST", body: JSON.stringify(payload) });
+      renderStructured(resp.data, resp.text, resp);
+    }
+  } catch (e) {
+    $("stResult").innerHTML = `<div class="msg error" style="max-width:none">调用失败：${esc(e.message)}</div>`;
+  }
+}
+function renderStructured(data, rawText, meta) {
+  let html = `<div class="kv" style="margin-bottom:12px">`;
+  if (meta && meta.request_id) html += `<div class="k">request_id</div><div style="font-family:var(--mono)">${meta.request_id}</div>`;
+  if (meta && meta.provider) html += `<div class="k">provider / model</div><div>${meta.provider} / ${meta.upstream_model || "-"}</div>`;
+  if (meta && meta.usage) html += `<div class="k">tokens</div><div>${meta.usage.input_tokens} / ${meta.usage.output_tokens}</div>`;
+  if (meta && meta.metrics) html += `<div class="k">延迟</div><div>${Math.round(meta.metrics.latency_ms)}ms（重试 ${meta.metrics.retries}，降级 ${meta.metrics.fallbacks}）</div>`;
+  html += `</div>`;
+  html += `<div class="hint" style="margin-bottom:6px">✓ 已通过本地 JSON Schema 校验</div>`;
+  html += `<pre class="code">${esc(JSON.stringify(data, null, 2))}</pre>`;
+  if (rawText && rawText !== JSON.stringify(data)) {
+    html += `<div class="hint" style="margin:10px 0 4px">模型原始输出</div><pre class="code">${esc(rawText)}</pre>`;
+  }
+  $("stResult").innerHTML = html;
+}
+
+/* ---------------- Prompt 版本 ---------------- */
+async function loadPromptList() {
+  $("promptList").innerHTML = '<div class="loading">加载中…</div>';
+  try {
+    const data = await api("/v1/prompts");
+    state.prompts = data.data;
+    $("promptList").innerHTML = state.prompts.length
+      ? state.prompts.map((p) => `
+          <div class="card" style="margin-bottom:10px;cursor:pointer" onclick="selectPrompt('${p.id}')">
+            <b>${p.id}</b> <span class="hint">${p.name}</span><br>
+            <span class="hint">版本：${p.versions.map((v) => v === p.active_version ? `v${v}*` : "v" + v).join(", ")}</span>
+          </div>`).join("")
+      : '<div class="hint">暂无模板。运行 llm-unify init 生成示例。</div>';
+  } catch (e) { $("promptList").innerHTML = `<div class="msg error" style="max-width:none">${esc(e.message)}</div>`; }
+}
+async function selectPrompt(id) {
+  try {
+    const detail = await api(`/v1/prompts/${encodeURIComponent(id)}`);
+    state.currentPrompt = { id, active: detail.active_version, versions: [] };
+    $("pvVersion").innerHTML = detail.version
+      ? `<option value="${detail.version}">v${detail.version}</option>` : "";
+    // 拉全部版本：先取列表再逐个取详情开销大，改为展示当前 + 通过列表版本号切换
+    const listing = await api("/v1/prompts");
+    const meta = listing.data.find((p) => p.id === id);
+    state.currentPrompt.versions = meta ? meta.versions : [detail.version];
+    $("pvVersion").innerHTML = state.currentPrompt.versions
+      .map((v) => `<option value="${v}" ${v === detail.version ? "selected" : ""}>v${v}${v === meta.active_version ? "（active）" : ""}</option>`).join("");
+    $("diffLeft").innerHTML = $("diffRight").innerHTML = state.currentPrompt.versions
+      .map((v) => `<option value="${v}">v${v}</option>`).join("");
+    const n = state.currentPrompt.versions.length;
+    if (n >= 2) {
+      $("diffLeft").value = state.currentPrompt.versions[n - 2];
+      $("diffRight").value = state.currentPrompt.versions[n - 1];
+    }
+    showPromptDetail(detail);
+  } catch (e) { toast("加载失败：" + e.message); }
+}
+async function showPromptDetail(detail) {
+  if (!detail) {
+    try { detail = await api(`/v1/prompts/${encodeURIComponent(state.currentPrompt.id)}?version=${$("pvVersion").value}`); }
+    catch (e) { return; }
+  }
+  $("promptDetail").innerHTML = `
+    <div class="kv" style="margin-bottom:10px">
+      <div class="k">id / 名称</div><div>${detail.id} / ${esc(detail.name || "-")}</div>
+      <div class="k">说明</div><div>${esc(detail.description || "-")}</div>
+      <div class="k">版本 / 角色</div><div>v${detail.version} / ${detail.role}</div>
+      <div class="k">创建时间</div><div>${esc(detail.created_at || "-")}</div>
+    </div>
+    <pre class="code">${esc(detail.template)}</pre>`;
+}
+async function doDiff() {
+  const id = state.currentPrompt && state.currentPrompt.id;
+  if (!id) return;
+  try {
+    const data = await api(`/v1/prompts/${encodeURIComponent(id)}/diff?left=${$("diffLeft").value}&right=${$("diffRight").value}`);
+    $("promptDiff").innerHTML = data.diff
+      ? `<div class="diff">${data.diff.split("\n").map((l) => {
+          if (l.startsWith("+++") || l.startsWith("---")) return `<span class="hdr">${esc(l)}</span>`;
+          if (l.startsWith("+")) return `<span class="add">${esc(l)}</span>`;
+          if (l.startsWith("-")) return `<span class="del">${esc(l)}</span>`;
+          return `<span class="ctx">${esc(l)}</span>`;
+        }).join("")}</div>`
+      : '<div class="hint">两个版本模板相同。</div>';
+  } catch (e) { $("promptDiff").innerHTML = `<div class="msg error" style="max-width:none">${esc(e.message)}</div>`; }
+}
+async function doRender() {
+  const id = state.currentPrompt && state.currentPrompt.id;
+  if (!id) { $("renderOut").innerHTML = '<div class="hint">先选择模板。</div>'; return; }
+  const body = { id, variables: parseVars($("renderVars").value) };
+  const ver = $("pvVersion").value;
+  if (ver) body.version = Number(ver);
+  try {
+    const data = await api(`/v1/prompts/${encodeURIComponent(id)}/render`, { method: "POST", body: JSON.stringify(body) });
+    $("renderOut").innerHTML = `<div class="hint" style="margin-bottom:6px">渲染自 ${id}@v${data.version}（role=${data.role}）</div><pre class="code">${esc(data.content)}</pre>`;
+  } catch (e) { $("renderOut").innerHTML = `<div class="msg error" style="max-width:none">${esc(e.message)}</div>`; }
+}
+
+/* ---------------- 统计 ---------------- */
+async function loadStats() {
+  try {
+    const stats = await api("/v1/stats");
+    const t = stats.totals || {};
+    $("statKpis").innerHTML = `
+      <div class="kpi"><div class="v">${t.requests ?? 0}</div><div class="k">总请求</div></div>
+      <div class="kpi"><div class="v">${((t.error_rate ?? 0) * 100).toFixed(1)}%</div><div class="k">错误率</div></div>
+      <div class="kpi"><div class="v">${t.input_tokens ?? 0} / ${t.output_tokens ?? 0}</div><div class="k">tokens 输入/输出</div></div>
+      <div class="kpi"><div class="v">${t.avg_latency_ms != null ? Math.round(t.avg_latency_ms) + "ms" : "-"}</div><div class="k">平均延迟</div></div>
+      <div class="kpi"><div class="v">${t.retries ?? 0} / ${t.fallbacks ?? 0}</div><div class="k">重试 / 降级</div></div>`;
+    $("statByModel").innerHTML = groupTable(stats.by_model, "model");
+    $("statByProvider").innerHTML = groupTable(stats.by_provider, "provider");
+    const recent = await api("/v1/stats/recent?limit=15");
+    $("statRecent").innerHTML = `
+      <thead><tr><th>request_id</th><th>模型</th><th>provider</th><th>状态</th><th>tokens</th><th>延迟</th><th>错误</th></tr></thead>
+      <tbody>${(recent.data || []).map((r) => `
+        <tr>
+          <td style="font-family:var(--mono)">${esc(r.request_id)}</td><td>${esc(r.alias || "-")}</td>
+          <td>${esc(r.provider || "-")}</td>
+          <td style="color:${r.status === "success" ? "var(--ok)" : "var(--err)"}">${r.status}</td>
+          <td class="num">${r.input_tokens}/${r.output_tokens}</td>
+          <td class="num">${Math.round(r.latency_ms)}ms</td>
+          <td>${esc(r.error_type || "-")}</td>
+        </tr>`).join("")}</tbody>`;
+  } catch (e) { $("statKpis").innerHTML = `<div class="msg error" style="max-width:none">${esc(e.message)}</div>`; }
+}
+function groupTable(rows, keyName) {
+  if (!rows || !rows.length) return '<div class="hint">暂无数据。</div>';
+  return `<table><thead><tr><th>${keyName}</th><th>请求</th><th>错误率</th><th>tokens</th><th>均延迟</th><th>重试</th></tr></thead>
+    <tbody>${rows.map((r) => `
+      <tr><td>${esc(String(r[keyName]))}</td><td class="num">${r.requests}</td>
+      <td class="num">${(r.error_rate * 100).toFixed(0)}%</td>
+      <td class="num">${r.input_tokens}/${r.output_tokens}</td>
+      <td class="num">${r.avg_latency_ms != null ? Math.round(r.avg_latency_ms) + "ms" : "-"}</td>
+      <td class="num">${r.retries}</td></tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------------- 路由 ---------------- */
+async function loadRoutes() {
+  try {
+    const data = await api("/v1/models");
+    $("routeList").innerHTML = Object.entries(data.data).map(([alias, m]) => `
+      <div class="card" style="margin-bottom:12px">
+        <b style="font-size:15px">${alias}</b><span class="badge">${m.strategy}</span>
+        <table style="margin-top:8px">
+          <thead><tr><th>provider</th><th>上游模型</th><th>协议</th><th>结构化档位</th><th>权重</th><th>健康度</th></tr></thead>
+          <tbody>${m.routes.map((r) => `
+            <tr>
+              <td>${esc(r.provider)}</td><td>${esc(r.model)}</td>
+              <td><span class="badge proto">${esc(r.protocol)}</span></td>
+              <td><span class="badge">${esc(r.structured_output)}</span></td>
+              <td class="num">${r.weight}</td>
+              <td>${r.circuit.circuit_open
+                    ? '<span class="badge open">熔断中</span>'
+                    : `<span class="hint">连续失败 ${r.circuit.consecutive_failures}</span>`}</td>
+            </tr>`).join("")}</tbody>
+        </table>
+      </div>`).join("");
+  } catch (e) { $("routeList").innerHTML = `<div class="msg error" style="max-width:none">${esc(e.message)}</div>`; }
+}
+
+/* ---------------- 工具 ---------------- */
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function toast(msg) { console.warn(msg); }
+
+loadPromptList();
+init();
+</script>
+</body>
+</html>
