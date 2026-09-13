@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>《LLM 翻译公司》— llm-unify 项目漫画</title>
+<title>《一个 LLM 网关教我的 11 个工程知识点》</title>
 <style>
   :root {
     --ink: #1f2430; --paper: #fffdf6; --line: #2b2b2b;
@@ -15,25 +15,24 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: #e9e4d8; color: var(--ink);
          font: 16px/1.7 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; }
 
   header.cover { background: var(--ink); color: #fff; border: 4px solid var(--line);
-    border-radius: 18px; padding: 42px 28px; text-align: center; margin-bottom: 28px;
+    border-radius: 18px; padding: 40px 28px; text-align: center; margin-bottom: 28px;
     box-shadow: 8px 8px 0 rgba(0,0,0,.15); }
-  header.cover h1 { font-size: 34px; margin: 0 0 10px; letter-spacing: 2px; }
+  header.cover h1 { font-size: 30px; margin: 0 0 10px; letter-spacing: 1px; }
   header.cover p { margin: 4px 0; opacity: .85; }
-  header.cover .tags { margin-top: 14px; }
-  header.cover .tag { display: inline-block; border: 1.5px solid #ffffff88; border-radius: 999px;
-    padding: 2px 12px; margin: 3px; font-size: 13px; }
+  header.cover .sub { font-size: 14px; opacity: .7; margin-top: 10px; }
 
   .panel { background: var(--paper); border: 3.5px solid var(--line); border-radius: 16px;
     padding: 22px 22px 16px; margin-bottom: 26px; box-shadow: 6px 6px 0 rgba(0,0,0,.12);
     position: relative; }
-  .panel h2 { margin: 0 0 14px; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 { margin: 0 0 4px; font-size: 19px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .panel h2 .no { background: var(--ink); color: #fff; border-radius: 8px; font-size: 13px;
     padding: 1px 9px; font-family: monospace; }
+  .panel .en { font-size: 12.5px; color: #6b7280; font-family: monospace; }
 
-  .scene { display: flex; flex-direction: column; gap: 12px; }
+  .scene { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
   .row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
   .actor { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 76px; }
   .actor .face { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
@@ -42,19 +41,21 @@
   .actor.small .face { width: 44px; height: 44px; font-size: 22px; }
 
   .bubble { position: relative; background: #fff; border: 2.5px solid var(--line);
-    border-radius: 14px; padding: 9px 14px; max-width: 430px; font-size: 15px; }
+    border-radius: 14px; padding: 9px 14px; max-width: 460px; font-size: 15px; }
   .bubble.left { border-bottom-left-radius: 2px; }
   .bubble.right { border-bottom-right-radius: 2px; }
-  .bubble.think { background: #f8fafc; border-style: dashed; }
   .bubble b { color: var(--blue); }
   .bubble code { background: #eef2ff; border-radius: 5px; padding: 0 5px;
     font-family: Consolas, monospace; font-size: 13.5px; color: #3730a3; }
 
-  .note { margin-top: 14px; background: #f4f4ef; border-left: 4px solid var(--ink);
-    border-radius: 0 10px 10px 0; padding: 9px 14px; font-size: 13.5px; color: #444; }
-  .note b { color: var(--ink); }
-  .note code { font-family: Consolas, monospace; font-size: 12.5px; background: #e8e8e0;
+  .know { margin-top: 14px; border: 2.5px dashed #b9b3a4; border-radius: 12px; padding: 10px 14px;
+    font-size: 13.5px; color: #444; background: #faf9f2; }
+  .know .k { font-weight: 700; color: var(--ink); }
+  .know .k::before { content: "🧠 "; }
+  .know code { font-family: Consolas, monospace; font-size: 12.5px; background: #eceadf;
     padding: 0 4px; border-radius: 4px; }
+  .know .ext { display: block; margin-top: 4px; color: #7c6f57; font-size: 12.5px; }
+  .know .ext::before { content: "💬 面试/延伸："; color: #a0947c; }
 
   .c-blue { background: var(--blue-bg); } .c-purple { background: var(--purple-bg); }
   .c-teal { background: var(--teal-bg); } .c-amber { background: var(--amber-bg); }
@@ -67,244 +68,291 @@
 
   footer { text-align: center; color: #6b7280; font-size: 13.5px; margin-top: 30px; line-height: 2; }
   footer a { color: var(--blue); }
-  @media (max-width: 640px) { header.cover h1 { font-size: 26px; } .bubble { max-width: 88%; } }
+  @media (max-width: 640px) { header.cover h1 { font-size: 24px; } .bubble { max-width: 88%; } }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header class="cover">
-  <h1>《LLM 翻译公司》</h1>
-  <p>—— 一次调用，直连所有大模型 ——</p>
-  <p style="font-size:14px; margin-top:10px;">llm-unify · 统一模型调用服务 · week01 作业漫画版</p>
-  <div class="tags">
-    <span class="tag">多协议适配</span><span class="tag">流式输出</span><span class="tag">结构化输出</span>
-    <span class="tag">重试/熔断/限流</span><span class="tag">Prompt 版本</span><span class="tag">可观测</span>
-  </div>
+  <h1>一个 LLM 网关教我的<br>11 个工程知识点</h1>
+  <p>项目会过时，模式不会 —— 用 llm-unify 当教材</p>
+  <p class="sub">案例代码：github.com/huihuiha/agent → llm-unify/ ｜ 配套飞书文档同名</p>
 </header>
 
-<!-- ============ 第 1 格 ============ -->
+<!-- ============ 01 防腐层 ============ -->
 <div class="panel">
-  <span class="sign">序章</span>
-  <h2><span class="no">01</span>业务小哥的烦恼</h2>
+  <span class="sign">架构</span>
+  <h2><span class="no">01</span>防腐层 <span class="en">Anti-Corruption Layer</span></h2>
   <div class="scene">
     <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble left">我想调个 DeepSeek 写总结、调个 Claude 做评审……结果发现<b>三家 API 说三种"方言"</b>！</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble left">为什么我的业务代码里全是 <code>if provider == "anthropic"</code>？</div>
     </div>
     <div class="row">
-      <div class="actor small"><div class="face c-purple">🎩</div><div class="name">Responses 协议</div></div>
-      <div class="bubble left">system 请放 <code>instructions</code>，上限叫 <code>max_output_tokens</code>～</div>
+      <div class="actor"><div class="face c-amber">🏛️</div><div class="name">架构师</div></div>
+      <div class="bubble left">因为<b>别人家的概念渗进了你家的代码</b>。在边界上建一层翻译，外部概念到此为止——这就是防腐层。</div>
     </div>
     <div class="row">
-      <div class="actor small"><div class="face c-rose">🥷</div><div class="name">Anthropic 协议</div></div>
-      <div class="bubble left">system 要放顶层参数！还要 <code>x-api-key</code> 头！<code>max_tokens</code> 必填！</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">判断标准是什么？</div>
     </div>
     <div class="row">
-      <div class="actor small"><div class="face c-teal">🧧</div><div class="name">Chat 协议</div></div>
-      <div class="bubble left">俺们 system 放 messages 里，流式要 <code>stream_options</code> 才给 usage～</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble right">😭 每家的字段名、鉴权头、流式事件、错误格式<b>全都不一样</b>，我的代码里已经 if/else 满天飞了……</div>
+      <div class="actor"><div class="face c-amber">🏛️</div><div class="name">架构师</div></div>
+      <div class="bubble left">搜一下你的代码，出现 <code>instructions</code>、<code>x-api-key</code> 这种<b>外部词汇</b>，防腐层就漏了。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>：这就是"协议不兼容"——需要一层<b>防腐层</b>把差异挡在业务之外。对应代码 <code>adapters/</code> 三个适配器。</div>
+  <div class="know"><span class="k">知识点</span>：统一协议 = 各外部系统的<b>公共最大交集</b>（7 个字段）；业务只依赖自己的语言。
+    案例落点：<code>contracts.py</code> 的 <code>UnifiedRequest</code>。
+    <span class="ext">DDD 里的经典战术模式；同样适用于支付网关、多云存储、第三方登录。问"怎么隔离第三方 SDK"时就是考它。</span></div>
 </div>
 
-<!-- ============ 第 2 格 ============ -->
+<!-- ============ 02 适配器 ============ -->
 <div class="panel">
-  <h2><span class="no">02</span>公司开张：一张菜单走天下</h2>
+  <span class="sign">设计模式</span>
+  <h2><span class="no">02</span>适配器 + 注册表 <span class="en">Adapter & Registry</span></h2>
   <div class="scene">
     <div class="row">
-      <div class="actor"><div class="face c-amber">📋</div><div class="name">统一协议</div></div>
-      <div class="bubble left">别慌！本公司只提供<b>一张菜单</b>：<code>model / messages / response_format / temperature / top_p / max_tokens / stream</code></div>
+      <div class="actor"><div class="face c-purple">🎩</div><div class="name">翻译官 A</div></div>
+      <div class="bubble left">我只会 Responses 方言，别的不接。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble right">就这 7 个字段？就能用所有模型？</div>
+      <div class="actor"><div class="face c-rose">🥷</div><div class="name">翻译官 B</div></div>
+      <div class="bubble left">我只管 Anthropic 方言。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-amber">📋</div><div class="name">统一协议</div></div>
-      <div class="bubble left">对，这是所有主流 LLM API 的<b>公共最大交集</b>。你写一次，我们翻译成各家方言。</div>
+      <div class="actor"><div class="face c-ink">📇</div><div class="name">注册表</div></div>
+      <div class="bubble left">客人报个 <code>protocol</code> 字符串，我查表派一位。<b>新来一位翻译官？登记一行就能上岗</b>——没人需要改老代码。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>：统一调用协议 <code>UnifiedRequest</code>（<code>contracts.py</code>）——业务层永不接触上游原始报文。</div>
+  <div class="know"><span class="k">知识点</span>：<b>开闭原则</b>——对扩展开放（加子类+注册一行），对修改关闭（业务/路由层零改动）。接口用抽象基类强制（<code>ABC</code>），差异全部压进子类。
+    案例落点：<code>adapters/base.py</code> + <code>ADAPTER_REGISTRY</code>。
+    <span class="ext">GoF 23 模式里出镜率最高的一对；配合"组合优于继承"（公共逻辑放基类、差异放子类）一起讲。</span></div>
 </div>
 
-<!-- ============ 第 3 格 ============ -->
+<!-- ============ 03 异常体系 ============ -->
 <div class="panel">
-  <h2><span class="no">03</span>三位翻译官：适配器模式</h2>
+  <span class="sign">错误处理</span>
+  <h2><span class="no">03</span>用类型编码处理策略 <span class="en">Typed Exceptions</span></h2>
   <div class="scene">
     <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble right">这是我的请求，请给我 <code>deepseek-v4-pro</code> 的回答。</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble left">catch 里写 <code>if "timeout" in str(e)</code> 判断要不要重试……</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-purple">🎩</div><div class="name">Responses 翻译官</div></div>
-      <div class="bubble left">收到！system 搬进 <code>instructions</code>，结构化输出走<b>原生 json_schema</b>（硬约束）。</div>
+      <div class="actor"><div class="face c-amber">🏛️</div><div class="name">架构师</div></div>
+      <div class="bubble left">住手！字符串匹配会碎。<b>让异常类自己携带策略</b>：<code>retryable</code>、HTTP 状态码、退出码——上层只读属性，永不罗列清单。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-rose">🥷</div><div class="name">Anthropic 翻译官</div></div>
-      <div class="bubble left">到我这儿没有结构化字段，我把 Schema <b>写进 system 说服模型</b>（prompt_only 降级档）。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-teal">🧧</div><div class="name">DeepSeek 翻译官</div></div>
-      <div class="bubble left">俺是中间档：开 <code>json_object</code> 保语法 + Schema 注入保语义（json_mode）～</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-amber">📋</div><div class="name">统一协议</div></div>
-      <div class="bubble left">无论谁接单，回给你的都是<b>同一种格式</b>（ModelResult / 事件流）。换供应商？改一行配置。</div>
+      <div class="actor small"><div class="face c-red">🔒</div><div class="name">401</div></div>
+      <div class="bubble left">我不可重试。</div>
+      <div class="actor small"><div class="face c-amber">⏰</div><div class="name">429</div></div>
+      <div class="bubble left">我等一会就好。</div>
+      <div class="actor small"><div class="face c-red">📏</div><div class="name">超窗</div></div>
+      <div class="bubble left">重试一万次我也这样。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>：适配器模式 + 注册表（<code>ADAPTER_REGISTRY</code>）。新增协议 = 1 个子类 + 1 行注册，业务层零改动（开闭原则）。</div>
+  <div class="know"><span class="k">知识点</span>：错误分类学——<b>瞬时 vs 确定</b>决定可重试；<b>谁的错</b>决定 HTTP 码（4xx 客户端/5xx 服务端）；基类默认不可重试（宁漏勿滥）。
+    案例落点：<code>exceptions.py</code>，重试层只剩 <code>if not exc.retryable: raise</code>。
+    <span class="ext">所有网关/中间件的面试题：错误该在哪一层处理？答案永远是"谁有信息谁决策，类型负责传递信息"。</span></div>
 </div>
 
-<!-- ============ 第 4 格 ============ -->
+<!-- ============ 04 重试 ============ -->
 <div class="panel">
-  <h2><span class="no">04</span>前台领班：模型路由</h2>
+  <span class="sign">稳定性 1/3</span>
+  <h2><span class="no">04</span>指数退避与抖动 <span class="en">Backoff & Jitter</span></h2>
   <div class="scene">
     <div class="row">
-      <div class="actor"><div class="face c-ink">🧭</div><div class="name">Router 领班</div></div>
-      <div class="bubble left">客人点名 <code>deepseek-v4-pro</code>？我查路由表——主路由 Responses 官，备路由 Anthropic 官。</div>
+      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
+      <div class="bubble left">失败了别马上撞，0.5s → 1s → 2s，<b>指数拉大间隔</b>——故障恢复时间未知，别在人家最虚的时候冲。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble right">为什么要备用的？</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-ink">🧭</div><div class="name">Router 领班</div></div>
-      <div class="bubble left">主官病了<b>自动换备官</b>（fallback）；忙不过来还能<b>按权重分流</b>（负载均衡）。全楼谁身体不好，我都记在小本本上。</div>
-    </div>
-  </div>
-  <div class="note"><b>知识点</b>：<code>ModelRouter</code>（<code>router.py</code>）——别名路由、priority/weighted_random 两策略、熔断状态记录。</div>
-</div>
-
-<!-- ============ 第 5 格 ============ -->
-<div class="panel">
-  <h2><span class="no">05</span>门口三兄弟：限流 · 重试 · 熔断</h2>
-  <div class="scene">
-    <div class="row">
-      <div class="actor"><div class="face c-amber">🎫</div><div class="name">令牌门卫</div></div>
-      <div class="bubble left">进门先领<b>令牌</b>！桶里就 10 个，每秒补 1 个——管你多急，超速就请回（429）。</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">大家都退避 1 秒，不就同一毫秒一起冲回去了？</div>
     </div>
     <div class="row">
       <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
-      <div class="bubble left">上游 429/超时/5xx？别急，我<b>指数退避</b>地重试：0.5s → 1s → 2s，还得<b>抖一抖</b>（jitter），免得大家同一毫秒冲上去把刚醒的上游又撞晕。</div>
+      <div class="bubble left">好问题！这叫<b>惊群</b>。所以退避要<b>乘随机抖动</b>（±25%），把"精确同时"打散成区间分布——实测 10 个客户端同时重试，峰值并发从 10/10 降到 8/10。</div>
+    </div>
+  </div>
+  <div class="know"><span class="k">知识点</span>：重试的前提是<b>幂等</b>；放大系数 = 次数×层数（客户端×网关×SDK 会叠成 27 倍流量），所以<b>重试只在一层做</b>。
+    案例落点：<code>retry.py</code>（退避封顶 + 抖动；<code>sleep</code> 可注入假时钟）。
+    <span class="ext">AWS 架构博客与 Google SRE 的经典题；进阶追问：full jitter vs bounded jitter、重试预算（retry budget）。</span></div>
+</div>
+
+<!-- ============ 05 熔断 ============ -->
+<div class="panel">
+  <span class="sign">稳定性 2/3</span>
+  <h2><span class="no">05</span>熔断器 <span class="en">Circuit Breaker</span></h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
+      <div class="bubble left">我最怕<b>持续故障</b>——重试只会把刚恢复的上游再撞挂。</div>
     </div>
     <div class="row">
       <div class="actor"><div class="face c-red">🛡️</div><div class="name">熔断保安</div></div>
-      <div class="bubble left">同一家连败 3 次？<b>拉闸！</b>冷却 20 秒内一个请求都不许送过去——快速失败，别陪葬。</div>
+      <div class="bubble left">那是我的活：<b>闭合 → 打开 → 半开</b>。连败 3 次就拉闸跳过它；冷却 20 秒后放一个试探请求；成功即复位，失败再拉闸。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble right">那 401 密码错、输入超长这种"注定失败"的呢？</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">分工是？</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
-      <div class="bubble left">那种我<b>一次都不重试</b>（retryable=False）——但会问问隔壁备官愿不愿意接（换路由的 Key 可能是对的）。</div>
+      <div class="actor"><div class="face c-red">🛡️</div><div class="name">熔断保安</div></div>
+      <div class="bubble left"><b>重试管瞬时故障，熔断管持续故障</b>——毫秒级抖动交给大叔，分钟级宕机交给我。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>：稳定性三件套各管一时段——限流管常态、重试管瞬时故障、熔断管持续故障（<code>rate_limit.py / retry.py / router.py</code>）。</div>
+  <div class="know"><span class="k">知识点</span>：核心价值是<b>快速失败</b>——故障期间不再浪费超时时间去撞墙；注意它是有状态的（进程内存态，重启清零）。
+    案例落点：<code>router.py</code> 的 <code>CircuitState</code> 三态。
+    <span class="ext">微服务三件套（重试/熔断/超时）的面试必考；进阶：熔断窗口的统计口径（滑动窗口 vs 连续计数）。</span></div>
 </div>
 
-<!-- ============ 第 6 格 ============ -->
+<!-- ============ 06 限流 ============ -->
 <div class="panel">
-  <h2><span class="no">06</span>质检员与改作业的老师：结构化输出</h2>
+  <span class="sign">稳定性 3/3</span>
+  <h2><span class="no">06</span>令牌桶限流 <span class="en">Token Bucket</span></h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-amber">🎫</div><div class="name">门卫</div></div>
+      <div class="bubble left">我的桶能装 10 个令牌、每秒补 1 个——<b>允许突发，稳态收敛</b>。没令牌？429 请回，附上建议等待秒数。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">要后台线程一直补令牌吗？</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-amber">🎫</div><div class="name">门卫</div></div>
+      <div class="bubble left">不用，<b>惰性补充</b>：取令牌时按时间差一次补足——零线程，纯计算。</div>
+    </div>
+  </div>
+  <div class="know"><span class="k">知识点</span>：为什么选令牌桶不选固定窗口？窗口算法在边界有<b>双倍尖峰</b>；漏桶强制匀速牺牲突发。单机用进程内桶，<b>多副本必须换 Redis</b>（接口不变，实现换）。
+    案例落点：<code>rate_limit.py</code>。
+    <span class="ext">限流三算法对比是高频题；追问点：分布式限流、分层限流（网关+供应商配额）。</span></div>
+</div>
+
+<!-- ============ 07 结构化输出 ============ -->
+<div class="panel">
+  <span class="sign">可靠性</span>
+  <h2><span class="no">07</span>信任边界与自纠错 <span class="en">Trust Boundary & Repair Loop</span></h2>
   <div class="scene">
     <div class="row">
       <div class="actor"><div class="face c-purple">🔍</div><div class="name">质检员</div></div>
-      <div class="bubble left">模型说输出 JSON？<b>我不信。</b>不管上游承诺了什么，我都本地再验一遍：语法 + JSON Schema 逐条核对。</div>
+      <div class="bubble left">上游说"我保证输出 JSON"？<b>我不信。</b>校验权必须在自己手里——这是网关对下游的唯一硬承诺。</div>
     </div>
     <div class="row">
-      <div class="actor small"><div class="face c-teal">🤖</div><div class="name">模型</div></div>
-      <div class="bubble left">呜……我交了 <code>{"name": 123}</code>，name 要求字符串……</div>
+      <div class="actor"><div class="face c-amber">✏️</div><div class="name">老师</div></div>
+      <div class="bubble left">不合格别扔，把<b>错题详情</b>喂回去让它改——"name 要 string 你给了 123"。这叫修复循环：<b>带着上下文订正</b>，比从零重写省且稳。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-amber">✏️</div><div class="name">修复老师</div></div>
-      <div class="bubble left">来，这是你的错题详情——<b>哪条不对、Schema 是什么</b>都给你，在原文基础上改，别从头重写（修复循环）。</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">这个思想还能用在哪？</div>
     </div>
     <div class="row">
-      <div class="actor small"><div class="face c-teal">🤖</div><div class="name">模型</div></div>
-      <div class="bubble left"><code>{"name": "Ada"}</code> ✅</div>
+      <div class="actor"><div class="face c-purple">🔍</div><div class="name">质检员</div></div>
+      <div class="bubble left">任何<b>概率性输出</b>：代码生成后跑测试、失败信息回喂模型重改——Agent 自我修正的通用骨架。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>："不信任上游"原则——本地始终校验（<code>structured.py</code>）；校验失败进<b>修复循环</b>（喂回错误详情重发，<code>service.py</code>），耗尽才抛 422。</div>
+  <div class="know"><span class="k">知识点</span>：能力分级降级（原生 schema → json_mode → prompt_only）；"不信任上游"= 永远本地校验；修复循环是 LLM 时代的<b>重试变体</b>——重试重发同样请求，修复重发<b>更好的请求</b>。
+    案例落点：<code>structured.py</code> + <code>service.py:_dispatch_with_structured</code>。
+    <span class="ext">Agent 工程的核心模式之一（self-correction / reflexion）；面试问"LLM 输出不稳定怎么办"的标准答案。</span></div>
 </div>
 
-<!-- ============ 第 7 格 ============ -->
+<!-- ============ 08 流式 ============ -->
 <div class="panel">
-  <h2><span class="no">07</span>直播员：流式输出</h2>
+  <span class="sign">交互</span>
+  <h2><span class="no">08</span>流式的代价：不可撤回 <span class="en">Streaming & Irrevocability</span></h2>
   <div class="scene">
     <div class="row">
       <div class="actor"><div class="face c-rose">📺</div><div class="name">直播员</div></div>
-      <div class="bubble left">等全部写完再给你？太慢了！我<b>边生成边播</b>：<code>start → delta → delta → … → end</code>。</div>
+      <div class="bubble left">首 token 延迟（TTFT）比总延迟更影响体验——所以我边生成边播，事件协议统一成 <code>start/delta/end</code>。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">业务小哥</div></div>
-      <div class="bubble right">那 JSON 还没写完怎么校验？</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">播到一半上游挂了呢？重试呀？</div>
     </div>
     <div class="row">
       <div class="actor"><div class="face c-rose">📺</div><div class="name">直播员</div></div>
-      <div class="bubble left">播归播，验归验——我<b>先转发碎片</b>（你看打字机效果），流结束再<b>整体校验</b>，合格就补发一个 <code>structured</code> 事件。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-teal">⏳</div><div class="name">重试大叔</div></div>
-      <div class="bubble left">提醒：直播开始后（第一个字已播出去）我就<b>不重试了</b>——重播会让观众看到鬼畜的双重内容！</div>
+      <div class="bubble left"><b>不能。</b>已经播出去的字收不回来，重发观众会看到鬼畜。所以流式的重试窗口<b>只存在于首帧之前</b>——这是流与非流在容错设计上的根本分叉。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>：SSE 类型化事件协议（start/delta/structured/end/error）+ "不可撤回"语义（首 delta 后不重试）+ TTFT 首 token 指标。</div>
+  <div class="know"><span class="k">知识点</span>：SSE 协议（POST+流式读取，DevTools 对 POST-SSE 显示为空是浏览器限制）；生成器惰性求值天然背压；<b>不可撤回语义</b>改变一切容错决策。
+    案例落点：<code>service.stream</code> 的 <code>emitted</code> 标志。
+    <span class="ext">SSE vs WebSocket 选型（单向 vs 双向、断线重连）；流式场景的取消、checkpoint、事件重放是进阶题。</span></div>
 </div>
 
-<!-- ============ 第 8 格 ============ -->
+<!-- ============ 09 Prompt 即代码 ============ -->
 <div class="panel">
-  <h2><span class="no">08</span>监控室、档案馆与安检口</h2>
+  <span class="sign">LLM 工程</span>
+  <h2><span class="no">09</span>Prompt 即代码 <span class="en">Prompt as Code</span></h2>
   <div class="scene">
     <div class="row">
-      <div class="actor"><div class="face c-ink">👁️</div><div class="name">监控室</div></div>
-      <div class="bubble left">每次调用都记档案：<b>request_id 贯穿全程</b>，tokens/延迟/首token/重试/降级/错误率，按模型和供应商随时查账。</div>
+      <div class="actor"><div class="face c-purple">📚</div><div class="name">档案馆</div></div>
+      <div class="bubble left">Prompt 是<b>行为契约</b>，改一个词行为就变——所以它配得上代码的待遇：版本号、diff、回滚、不可变历史。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">渲染用户传来的模板字符串，有风险吗？</div>
     </div>
     <div class="row">
       <div class="actor"><div class="face c-purple">📚</div><div class="name">档案馆</div></div>
-      <div class="bubble left">Prompt 当代码管——<b>版本只增不改</b>，随时 diff、随时回滚，线上行为永远可复现。</div>
+      <div class="bubble left">有！模板里写 <code>{{ ''.__class__ }}</code> 能逃逸执行代码——要<b>沙箱渲染</b>；变量缺失要<b>立即报错</b>而非静默产出半成品（StrictUndefined，fail-fast）。</div>
+    </div>
+  </div>
+  <div class="know"><span class="k">知识点</span>：版本不可变（只 INSERT 不 UPDATE，diff 永远稳定、行为可复现）；SSTI 攻击与沙箱；fail-fast 哲学。
+    案例落点：<code>prompts.py</code>（SandboxedEnvironment + StrictUndefined）。
+    <span class="ext">类比数据库 migration / API 版本管理；"prompt 变更如何回归"是 LLM 平台团队的核心痛点。</span></div>
+</div>
+
+<!-- ============ 10 注入防护 ============ -->
+<div class="panel">
+  <span class="sign">安全</span>
+  <h2><span class="no">10</span>当指令和数据共用一种语言 <span class="en">Prompt Injection</span></h2>
+  <div class="scene">
+    <div class="row">
+      <div class="actor"><div class="face c-red">🛂</div><div class="name">安检员</div></div>
+      <div class="bubble left">SQL 时代有参数化查询这个银弹，因为代码和数据<b>语法可分离</b>。但 prompt 是自然语言——指令和数据共享同一个表示空间，<b>没有语法边界</b>。</div>
+    </div>
+    <div class="row">
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble right">那怎么防？</div>
     </div>
     <div class="row">
       <div class="actor"><div class="face c-red">🛂</div><div class="name">安检员</div></div>
-      <div class="bubble left">用户输入里藏"忽略以上指令"？先<b>打包贴标签</b>（&lt;untrusted_data&gt; 包裹），输出敢泄漏系统提示词？<b>直接没收</b>（403）！</div>
+      <div class="bubble left"><b>纵深防御</b>：不可信数据贴标签包裹（输入侧）＋ 扫描系统提示词泄漏（输出侧）＋ 角色特权分级 ＋ 权限最小化。全是降险，没有根治——这是 OWASP LLM Top 1。</div>
     </div>
   </div>
-  <div class="note"><b>知识点</b>：可观测性（<code>observability.py</code>）、Prompt 版本管理（<code>prompts.py</code>，含 Jinja2 沙箱 + StrictUndefined）、注入防护两道防线（<code>security.py</code>）。</div>
+  <div class="know"><span class="k">知识点</span>：注入危害上限 = 被劫持输出能触发的副作用上限（模型只输出文本时最坏是"说错话"，接上工具就是"删库"）——所以<b>权限最小化才是真护城河</b>。
+    案例落点：<code>security.py</code> 两道防线。
+    <span class="ext">Agent 安全的入口话题；间接注入（恶意指令藏在网页/文档里）是工具调用场景的主战场。</span></div>
 </div>
 
-<!-- ============ 第 9 格 ============ -->
+<!-- ============ 11 工程实践 ============ -->
 <div class="panel">
-  <span class="sign">终章</span>
-  <h2><span class="no">09</span>三种打开方式</h2>
+  <span class="sign">工程实践</span>
+  <h2><span class="no">11</span>可测性是设计出来的 <span class="en">DI & Mock Transport</span></h2>
   <div class="scene">
     <div class="row">
-      <div class="actor"><div class="face c-blue">⌨️</div><div class="name">CLI</div></div>
-      <div class="bubble left"><code>llm-unify generate / stream / structured / stats</code>——命令行一把梭。</div>
+      <div class="actor"><div class="face c-blue">👨‍💻</div><div class="name">新人</div></div>
+      <div class="bubble left">79 个测试不花一分钱、不打真实 API，怎么做到的？</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-teal">🔌</div><div class="name">HTTP API</div></div>
-      <div class="bubble left"><code>POST /v1/generate</code> 统一协议 REST + SSE，OpenAPI 文档自带。</div>
+      <div class="actor"><div class="face c-green">🧪</div><div class="name">测试</div></div>
+      <div class="bubble left">两步：① <b>组合根</b>——全部对象在一个工厂函数里装配、依赖从构造器注入，测试就能换掉任何零件；② <b>MockTransport</b>——替换 httpx 传输层，截获<b>真实序列化后的请求</b>做断言（比 mock 对象方法强：连序列化 bug 都能抓）。</div>
     </div>
     <div class="row">
-      <div class="actor"><div class="face c-rose">🖥️</div><div class="name">Web 控制台</div></div>
-      <div class="bubble left">聊天/结构化/Prompt版本/统计/路由五个视图，浏览器打开 <code>/ui</code> 即用。</div>
-    </div>
-    <div class="row">
-      <div class="actor"><div class="face c-green">✅</div><div class="name">验收</div></div>
-      <div class="bubble left"><b>79 个单测全绿</b>（全部 mock 上游、不花一分钱）+ 无 Key 演示模式（fake）+ 真实 DeepSeek 调用验证通过。</div>
+      <div class="actor"><div class="face c-amber">🏛️</div><div class="name">架构师</div></div>
+      <div class="bubble left">记住：<b>可测性不是测试技巧，是架构属性</b>——测不了，说明依赖被焊死了。</div>
     </div>
   </div>
-  <div class="note"><b>一句话总结</b>：把"每家 API 一种方言"的混乱世界，收敛成"一张菜单、一个入口、一套治理"——这就是 llm-unify。</div>
+  <div class="know"><span class="k">知识点</span>：组合根（Composition Root）＝全项目唯一 new 的地方，15 行装配代码就是架构文档；fixture 工厂模式组装任意故障场景；"fake 模式"让无 Key 环境也能演示全链路。
+    案例落点：<code>runtime.py:build_service</code> + <code>tests/conftest.py</code>。
+    <span class="ext">"怎么测调了外部 API 的代码"是通用面试题；DI 的价值一句话——把"环境问题"和"逻辑问题"分开。</span></div>
 </div>
 
 <footer>
-  📦 源码：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → <code>llm-unify/</code> 子目录<br>
-  🎬 本漫画：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a>（单文件，可离线打开）<br>
-  🧪 验收：<code>uv sync --extra dev && uv run pytest -q</code> → 79 passed
+  📦 案例代码：<a href="https://github.com/huihuiha/agent">github.com/huihuiha/agent</a> → llm-unify/<br>
+  📄 配套飞书文档：《从一个 LLM 网关学到的 11 个工程知识点》（漫画的完整版）<br>
+  🎬 本漫画：<a href="https://github.com/huihuiha/agent/blob/main/llm-unify/docs/comic.html">docs/comic.html</a>（单文件可离线）
 </footer>
 </div>
 </body>
